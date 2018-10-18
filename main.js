@@ -1,12 +1,14 @@
-let str = 'a(3)dsfb(2)asd'
+let str = 'a(3)dsfb(2)asd(4)'
 
 function replace(str) {
   let result = ''
   let number = ''
 
   for (let i = 0; i < str.length; i++) {
-    if (isNaN(str[i])) {
-      if ((str[i] == "(") || (str[i] == ")")) continue;
+    if ( (isNaN(str[i])) || (i == (str.length - 1) ) ){
+      if (i !== (str.length - 1)) {
+        if ((str[i] == "(") || (str[i] == ")")) continue;
+      }
       if (number) {
         let lastChar = result[result.length - 1]
         let repeatedChar = ''
@@ -22,7 +24,7 @@ function replace(str) {
     }
   }
 
-  return result
+  return result.substring(0, result.length - 1)
 }
 
 console.log(replace(str));
