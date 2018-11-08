@@ -1,0 +1,1027 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Lists.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:06 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Списки</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+
+<script type="application/javascript"   src="../../_js/list.js"></script>       <!-- работа со списками  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- функции рисования  -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Списки</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#arr">      Списки как массивы</a></li>
+   <li><a href="#structure">Класс <b class="norm">List</b></a></li>
+    <li><a href="#structure2">Методы класса <b class="norm">List</b></a></li>
+   <li><a href="#insert">   Вставка элементов</a></li>
+   <li><a href="#del">      Удаление элементов</a></li>
+   <li><a href="#next"> Ещё немного функций</a></li>
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+<a id="next"></a>
+    <li><a href="#sort"> Упорядоченная вставка</a></li>
+    <li><a href="#next2">    Нефиктивные указатели</a></li>
+    <li><a href="#next3">    Двухсторонние списки</a></li>
+    <li><a href="#speed">    Тестирование быстродействия</a></li>
+    <li><a href="#ref">      Работа со списками</a></li>
+</ul>
+</div>
+</div>
+</p>
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="arr"></a>
+<h2>Списки как массивы</h2>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Массивы
+</div>
+Списки являются ключевой структурой организации данных в задачах искусственного интеллекта.
+В принципе, массивы JavaScript предоставляют все необходимые функции по работе со списками.
+Пустой список объявляется так: <b class="blue2">var</b> <b class="norm">lst = [];</b>. Затем
+элемент <b class="norm">it</b>  можно  добавить в конец: <b class="norm">lst.push(it)</b>
+или начало: <b class="norm">lst.unshift(it)</b> списка.
+Функцией <b class="norm">it=lst.pop()</b> элемент
+выталкивается из конца списка, а  <b class="norm">it=lst.shift()</b> - из начала.
+Слова <b class="norm">shift</b> и <b class="norm">unshift</b> как раз связаны с терминологией обыденных очередей.
+Когда кто-то залазит в очередь спереди, она вынуждена сдвинуться назад (<b class="norm">unshift</b>).
+При выходе первого человека из очереди - она  естественным образом сдвигается вперёд (<b class="norm">shift</b>).
+</p>
+<p>
+Удалить <b class="norm">count</b> элементов, начиная с <b class="norm">i</b>-того  можно вызовом
+<b class="norm">lst.splice(i, count)</b>. Эта же функция при вызове <b class="norm">lst.splice(i, 0, it)</b>
+вставляет элемент <b class="norm">it</b> на место индекса <b class="norm">i</b> (после <b class="norm">lst[i-1]</b>). Функция <b class="norm">lst.reverse()</b>
+обращает последовательность элементов списка.
+Ниже, справа от кода скрипта приведен результат вызова <b class="norm">document.write(res);</b> и тег &lt;<b class="blue2">br</b>&gt;
+в html означает переход к следующей строке:
+<div style="overflow:hidden; width:100%; margin-top:0em;">
+<div style="float:left; width:700px; margin-top:0em;">
+<style>.class_name_demo{ line-height:1em;}</style>
+<pre class="brush: js; class-name: 'class_name_demo'">
+   var lst = [],  n,   res = 'length = '+lst.length+"<br>";
+   lst.push(0);        res +=  lst + '<br>';
+   lst.push(1);        res +=  lst + '<br>';
+   lst.push(2);        res +=  lst + '<br>';
+   lst.unshift(-1);    res +=  lst + '<br>';
+   lst.unshift(-2);    res +=  lst + '<br><br>';
+
+   n = lst.pop();      res +=  lst + '  n='+n+'<br>';
+   n = lst.shift();    res +=  lst + '  n='+n+'<br>';
+   lst.splice(1,1);    res +=  lst + '<br>';
+   lst.splice(1,0,2);  res +=  lst + '<br>';
+   lst.reverse();      res +=  lst ;
+</pre>
+</div>
+<div style="float:right; margin-top:0em;">
+<pre class="outJS" style="width:15em">
+<script>
+function exmpl1()
+{
+   var lst = [],  n,   res = 'length = '+lst.length+"<br>";
+   lst.push(0);        res +=  lst + '<br>';
+   lst.push(1);        res +=  lst + '<br>';
+   lst.push(2);        res +=  lst + '<br>';
+   lst.unshift(-1);    res +=  lst + '<br>';
+   lst.unshift(-2);    res +=  lst + '<br><br>';
+
+   n = lst.pop();      res +=  lst + '  n='+n+'<br>';
+   n = lst.shift();    res +=  lst + '  n='+n+'<br>';
+   lst.splice(1,1);    res +=  lst + '<br>';
+   lst.splice(1,0,2);  res +=  lst + '<br>';
+   lst.reverse();      res +=  lst ;
+
+   document.write(res);
+}
+exmpl1();
+</script>
+</pre>
+</div><div style="clear:left"></div>
+</div>
+Однако, в ряде случаев, массив - не лучший выбор.
+В частности, при <a href="Trees.html"> поиске в ширину</a> необходимо часто добавлять элементы в начало списка.
+Эта операция для массива очень медленная, т.к. ему необходимо не только выделять дополнительную память,
+но и сдвигать все элементы массива вправо.
+Для таких случаев стоит использовать традиционные списки связанных между собой узлов ( = элементов) списка.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="structure"></a>
+<h2>Класс <b class="norm">List</b></h2>
+
+<p>
+Перейдём теперь к созданию <a href="AI_JavaScript.html#arr2">класса</a> <b class="norm">List</b>,
+который будет оперировать со списками.
+Зададим список при помощи набора структур вида <b class="norm">{ nm, prv, nxt }</b>,
+где  <b class="norm">nm</b> - имя узла (может хранить любые данные),
+ <b class="norm">prv</b> - указатель на предыдущий и <b class="norm">nxt</b> - на следующий узел.
+Если узлы не имеют указателя  <b class="norm">prv</b> - то это односторонний (правосторонний) список
+<a href="../_js/list.html"><b class="norm">List</b></a>,
+иначе список двухсторонний и он реализован классом <b class="norm">List2</b>.
+Односторонний список чуть быстрее двухстороннего, однако, он заметно медленнее при удалении из конца (<b class="norm">pop</b>).
+Если используется эта функция, необходим <b class="norm">List2</b>.
+</p>
+<p>
+Класс списка так же хранит указатели на первый - <b class="norm">beg</b> и последний - <b class="norm">end</b> его узел.
+Существует несколько способов интерпретации этих указателей.
+Мы подробнее рассмотрим более быстрый вариант, когда <b class="norm">beg</b> и <b class="norm">end</b> - это <i>фиктивные</i> узлы, а реальные находятся между ними.
+</p>
+<p>
+Определим  функцию, которая будет <i>конструктором</i> класса <b class="norm">List</b>:
+<pre class="brush: js">
+function List(nm)
+{
+   this.end = { nm:null, nxt:null };              // фиктивный последний элемент списка
+   this.beg = { nm:null, nxt:this.end };          // фиктивный первый элементы списка
+
+   this.length =  0;                              // число узлов в списке (пустой)
+
+   if(nm !== undefined)                           // если есть аргумент nm
+      this.push(nm);                              // сразу вставляем первый элемент
+}
+</pre>
+
+Функция <b class="norm">List</b> будет вызвана при объявлении объекта (экземпляра класса <b class="norm">List</b>)
+при помощи оператора <b class="blue2">new</b> когда мы напишем:
+<b class="blue2">var</b> <b class="norm">lst = </b><b class="blue2">new</b> <b class="norm">List();</b>
+Теперь объект <b class="norm">lst</b> будет хранить данные списка, доступ к которым производится через точку: (<b class="norm">lst.length</b> и т.д.).
+Такие данные будет помнить каждый экземпляр класса (и у каждого они будут иметь свои значения).
+Выше подобным образом объявлены  3 переменные-свойства класса (<b class="norm">end</b>, <b class="norm">beg</b> и <b class="norm">length</b>).
+</p>
+<p>
+В конструкторе класса <b class="norm">List</b> введен фиктивный указатель <b class="norm">end</b>,
+следующий за последним элементом списка.
+Фиктивный указатель <b class="norm">beg</b> через свойство <b class="norm">beg.nxt</b> ссылается на первый
+элемент списка. Так как список пока пустой, <b class="norm">beg.nxt</b> ссылается на <b class="norm">end</b>.
+Функцию (метод класса) <b class="norm">push</b> мы определим ниже.
+</p>
+<a id="structure_null"></a>
+<p>
+Отметим, что поля <b class="norm">nm</b> и <b class="norm">nxt</b>
+инициализированы  <i>нулевым указателем</i> <b class="blue2">null</b> (напомним, что между
+<b class="blue2">undefined</b> и <b class="blue2">null</b> существует заметная <a href="AI_JavaScript.html#rec7">разница</a>).
+Фиктивный указатель <b class="norm">end</b>, при вставке в конец списка, будет превращаться в реальный последний узел.
+Поэтому, таким объявлением, мы  предлагаем движку <b class="norm">JavaScript</b> сразу выделить память под объект с соответствующими полями,
+чтобы не пересоздавать его потом (при вставке).
+Это ускоряет работу с объектами (иногда в разы).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="structure2"></a>
+<h2>Методы класса</h2>
+
+<p>
+Кроме хранения данных, список должен выполнять определённые действия (иметь методы).
+Напишем, например, функцию, которая выводит список как строку в круглых скобках:
+<pre class="brush: js">
+List.prototype.toString = function ()
+{
+   var n = this.beg.nxt;                          // сразу за beg стоит первый узел
+   var st = "(";
+   while(n !== this.end){                         // пока нет  фиктивного последнего
+      st += n.nm + (n.nxt!== this.end ? "," : "");// выводим через запятую имена узлов
+      n = n.nxt;                                  // переходим к следующему узлу
+   }
+   return st+")";
+}
+</pre>
+<a href="Recursion.html#Learn_if_s">Конструкция</a> (<b class="norm">условие? значение_если_истина : значение_если_ложь</b>), являющаяся компактной записью условного оператора
+<b class="blue2">if</b>,
+служит для "ликвидации" запятой после последнего узла в списке.
+</p>
+<p>
+Функция с именем <b class="norm">toString</b>  может быть в любом классе. Если она определена, то экземпляр класса,
+когда этого требует соответствующий контекст, преобразуется в строку.
+Например, следующий скрипт:
+<pre class="brush: js">
+var lst = new List();
+document.write(lst);
+</pre>
+так как список пока пустой, выведет строку:
+<script>
+var lst = new List();
+document.write(lst);
+</script>.
+Функция <b class="norm">toString</b> есть и у массивов, поэтому их элементы можно выводить аналогичным образом.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="insert"></a>
+<h2>Вставка элементов</h2>
+
+<p>
+Напишем теперь функцию, вставляющую элемент с именем <b class="norm">nm</b> в начало списка:
+<pre class="brush: js">
+List.prototype.unshift = function (nm)
+{
+   this.length++;                                 // увеличиваем число узлов
+
+   this.beg.nxt = {nm: nm, nxt:this.beg.nxt};     // вставляемый элемент следует за beg
+}
+</pre>
+Так как мы хотим, чтобы список был похож на массив, при добавлении увеличивается переменная <b class="norm">length</b> (число элементов в списке).
+Затем (читая справа-налево) создаётся новый элемент-узел, который по указателю <b class="norm">nxt</b>
+ссылается на прежний  первый элемент списка <b class="norm">beg.nxt</b>,
+а фиктивный  узел <b class="norm">beg</b> по  <b class="norm">beg.nxt</b> начинает ссылается на вновь добавленный узел.
+Аналогично выглядит функция, вставляющая элемент в конец списка:
+<pre class="brush: js">
+List.prototype.push = function (nm)
+{
+   this.length++;                                 // увеличиваем число узлов
+
+   this.end.nm = nm;                              // фиктивный end становится реальным
+   this.end = this.end.nxt = { nm:null, nxt:null};// и затем снова фиктивным
+}
+</pre>
+Последнюю строку также необходимо читать справа-налево: сначала создаётся новый фиктивный последний узел,
+на который по  указателю  <b class="norm">end.nxt</b> ссылается реальный последний узел (которым становится "старый" фиктивный).
+Затем указатель на новый фиктивный сохраняется в <b class="blue2">this</b>.<b class="norm">end</b>.
+</p>
+<p>
+Графически, последовательная вставка <b class="norm">0, 1, 2</b> в начало и конец списка выглядит следующим образом:
+(первые картинки в каждой строке изображают пустые списки):
+<br><br>
+<center>
+<script>
+lst = new List();
+ document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.unshift(0); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.unshift(1); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.unshift(2); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+</script>
+</center>
+<br>
+<center>
+<script>
+lst = new List();
+ListShow.svg.isBE = true;
+ document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.push(0); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.push(1); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+lst.push(2); document.write(ListShow(lst),'&emsp;&emsp;&emsp;');
+</script>
+</center>
+</p>
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="del"></a>
+<h2>Удаление элементов</h2>
+
+<p>
+Обсудим алгоритмы удаления элементов из списка.
+Удаление в правосторонних списках (есть только ссылки <b class="norm">nxt</b>) из начала не представляет труда:
+<pre class="brush: js">
+List.prototype.shift = function ()
+{
+   if(this.length===0)
+      return;                                     // список пуст - вернём undefined
+
+   this.length--;                                 // уменьшаем число узлов
+
+   this.beg  = this.beg.nxt;                      // фиктивный beg ссылается на второй элемент
+   return this.beg.nm;
+}
+</pre>
+Отметим одну тонкость. Возвращаемый функцией указатель на имя первого узла <b class="norm">nm</b> остаётся в фиктивном узле <b class="norm">nm</b>,
+даже, если вызывающей функцию <b class="norm">shift</b> программе он уже не нужен.
+При необходимости (если данные, хранимые в списке занимают много памяти) его можно освободить, написав <b class="norm">lst.beg.nm=null</b>.
+</p>
+<p>
+Удаление из конца одностороннего списка, существенно более затратная операция, так как необходимо
+получить последний элемент (реальный) о котором указатель <b class="norm">end</b> ничего не знает:
+<pre class="brush: js">
+List.prototype.pop = function ()
+{
+   if(this.length === 0)
+      return;                                     // список пуст - вернём undefined
+
+   this.length--;                                 // уменьшаем число узлов
+
+   var n = this.beg.nxt;                          // начиная с первого реального узла,
+   while(n.nxt !== this.end)                      // ищем реальный последний узел
+      n = n.nxt;                                  // переходя каждый раз к следующему
+
+   this.end = n;                                  // фиктивный сдвигаем влево на один
+   return n.nm;
+}
+</pre>
+При частом выполнении этой операции, лучше использовать класс двунаправленного списка <b class="norm">List2</b>,
+в котором фиктивный финальный узел <b class="norm">end</b> (как и остальные узлы) хранит указатель на предыдущий
+элемент <b class="norm">end.prv</b>.
+</p>
+
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="next"></a>
+<h2>Ещё немного функций</h2>
+
+<p>
+Приведём несколько функций класса <b class="norm">List</b>, эффективность которых не столь высока,
+по сравнению с вставкой в начало или конец списка.
+Так, получение узла под номером pos (начиная с нуля) выглядит следующим образом:
+<pre class="brush: js">
+List.prototype.node = function (pos)
+{
+   var n = this.beg.nxt;                         // бежим от начала
+   while(n !== this.end && pos-- > 0)
+      n = n.nxt;                                 // переходим к следующему узлу
+   return n;
+}
+</pre>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">i--</b> vs. <b class="norm">--i</b></b>
+</div>
+Декриментирование справа (уменьшение значения на единицу): <b class="norm">pos--</b>, тоже, что <b class="norm">pos = pos - 1</b>.
+Однако, оно производится <i>после</i> участия переменной в выражении.
+Поэтому в цикле <b class="blue2">while</b> сначала проводится сравнение (<b class="norm">pos > 0</b>), а только после этого
+уменьшается значение <b class="norm">pos</b>. Иначе ситуация обстоит с декриментированием слева: <b class="norm">--pos < 0</b>.
+В этом случае, сначала бы произошло уменьшение переменной, а лишь затем её сравнение с нулём.
+</p>
+<p>
+Ещё одна функция добавляет узел с именем <b class="norm">nm</b> на место <b class="norm">pos</b> в списке (начиная с нуля),
+сдвигая всё вправо:
+<pre class="brush: js">
+List.prototype.insert = function (pos, nm)
+{
+   if(pos <= 0)                                   // добавляем в начало
+      return this.unshift(nm);
+   if(pos >= this.length)                         // добавляем в конец
+      return this.push(nm);
+
+   this.length++;                                 // увеличиваем число узлов
+   var n = this.node(pos-1);                      // перед вставляемым узлом
+   n.nxt = { nm:nm, nxt:n.nxt};
+}
+</pre>
+</p>
+<p>
+Аналогична функция удаления узла на месте <b class="norm">pos</b> в списке (начиная с нуля) и возвращения
+его поля  <b class="norm">nm</b>:
+<pre class="brush: js">
+List.prototype.remove = function (pos)
+{
+   if(pos <= 0)                                   // удаляем из начала
+      return this.shift();
+   if(pos+1 >= this.length)                       // удаляем из конца
+      return this.pop();
+
+   this.length--;                                 // уменьшаем число узлов
+   var n = this.node(pos-1);                      // перед удаляемым узлом
+   var nm = n.nxt.nm;
+   n.nxt = n.nxt.nxt;
+   return nm;
+}
+</pre>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="sort"></a>
+<h2>Упорядоченная вставка</h2>
+
+<!---
+<script>
+lst = new List();
+var arr2 = [1, 0, 5, 3, 0, 5, 8, 2];
+
+lst.lt = function(a, b){ return a.d < b.d; }
+
+for(var i=0; i < arr2.length; i++ ){
+   lst.add({d:arr2[i]});
+   document.write(arr2[i],' &rarr; ' ,lst, '<br>');
+}
+</script>
+--->
+
+<p>
+Добавим ещё функцию, которая вставляет элемент в начало списка,
+но при этом следит за упорядоченностью элементов:
+<pre class="brush: js">
+List.prototype.add = function (nm)
+{
+   var n = this.beg;                             // бежим от начала
+   while(n !== this.end && n.nxt.nm !==null && this.lt(n.nxt.nm,  nm) )
+      n = n.nxt;
+
+   this.length++;                                 // увеличиваем число узлов
+   n.nxt = {nm: nm, nxt:n.nxt};                   // вставляемый элемент следует за n
+}
+</pre>
+Предполагается, что в общем случае имя узла <b class="norm">nm</b> не является числом или строкой,
+поэтому в цикле используется функция сравнения <b class="norm">lt(a, b)</b>, которая должна возвращать <b class="blue2">true</b>,
+если <b class="norm">a &lt; b</b>, иначе (больше или равны) - <b class="blue2">false</b>.
+Она задаётся извне (хотя по умолчанию она определена так, как в закомментированной строке):
+<div style="overflow:hidden">
+<div style="float:left; width:50%">
+<pre class="brush: js">
+lst = new List();
+var arr = [1, 0, 5, 3, 0, 5, 8, 2];
+
+//lst.lt = function(a, b){ return a < b; }
+
+for(var i=0; i < arr.length; i++ ){
+   lst.add(arr[i]);
+   document.write(arr[i],' &rarr; ' ,lst, '<br>');
+}
+</pre>
+</div>
+<div style="float:right; ">
+<pre class="outJS" style="width:15em">
+<script>
+lst = new List();
+var arr = [1, 0, 5, 3, 0, 5, 8, 2];
+
+lst.lt = function(a, b){ return a < b; }
+
+for(var i=0; i < arr.length; i++ ){
+   lst.add(arr[i]);
+   document.write(arr[i],' &rarr; ' ,lst, '<br>');
+}
+</script>
+</pre>
+</div>
+<div style="clear:left;"></div>
+</div>
+В дальнейшем мы рассмотрим более эффективные способы хранения упорядоченных данных.
+</p>
+
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="next2"></a>
+<h2>Нефиктивные указатели</h2>
+
+<p>
+Рассмотрим кратко ещё один способ работы со списком, когда указатели <b class="norm">beg</b> и <b class="norm">end</b>
+реально ссылаются на первый и последний элементы списка (напрямую, а не через поле <b class="norm">nxt</b>).
+Оформим его в виде класса <b class="norm">List1</b>
+<pre class="brush: js">
+function List1(nm)
+{
+   this.beg = null;             // указатель на первый    элемент списка (пока в никуда)
+   this.end = null;             // указатель на последний элемент списка (пока в никуда)
+
+   this.length =  0;            // число узлов в списке
+
+   if(nm !== undefined)         // если есть аргумент nm
+      this.push(nm);            // сразу вставляем первый элемент с именем nm фу-ей push
+ }
+</pre>
+Для удобства рядом с функциями-методами этого класса повторим аналогичные функции класса <b class="norm">List</b>.
+Добавление в начало списка имеет вид:
+<div style="overflow:hidden">
+<div style="float:left; width:50%">
+<pre class="brush: js">
+List1.prototype.unshift = function (nm)
+{
+   if(this.length===0){
+      this.beg = this.end = { nm: nm };
+      this.length= 1;
+      return;
+   }
+   this.length++;
+   this.beg = {nm: nm, nxt:this.beg};
+}
+</pre>
+</div>
+<div style="float:left;">
+<pre class="brush: js">
+List.prototype.unshift = function (nm)
+{
+   this.length++;
+   this.beg.nxt = {nm: nm, nxt:this.beg.nxt};
+}
+</pre>
+</div>
+<div style="clear:left"></div>
+</div>
+Добавление в конец очереди:
+<div style="overflow:hidden">
+<div style="float:left; width:50%">
+<pre class="brush: js">
+List1.prototype.push = function (nm)
+{
+   if(this.length===0){
+      this.beg = this.end = { nm: nm };
+      this.length= 1;
+      return;
+   }
+   this.length++;
+   this.end = this.end.nxt = {nm: nm};
+}
+</pre>
+</div>
+<div style="float:left;">
+<pre class="brush: js">
+List.prototype.push = function (nm)
+{
+   this.length++;
+   this.end.nm = nm;
+   this.end = this.end.nxt = {  };
+}
+</pre>
+</div>
+<div style="clear:left"></div>
+</div>
+Как мы увидим ниже, списки <b class="norm">List1</b>
+по быстродействию заметно седленнее списков из класса  <b class="norm">List</b>.
+К тому-же, функции вставки в классе <b class="norm">List</b> не требуют проверки того,
+что список пуст, поэтому выглядят более изящными.
+</p>
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="next3"></a>
+<h2>Двухсторонние списки</h2>
+<p>
+Элементы (узлы) двухcторонних списков хранят в себе указатели, как на следующий элемент (<b class="norm">nxt</b>),
+так и на предыдущий (<b class="norm">prv</b>):
+<center>
+<script>
+lst = new List2();
+lst.push(0);  lst.push(1); lst.push(2); lst.push(3);
+document.write(ListShow(lst));
+</script>
+</center>
+Они реализованы классом <b class="norm">List2</b>, конструктор которого выглядит так:
+<pre class="brush: js">
+function List2(nm)
+{
+   this.end = {  };             // указатель на фиктивный последний элемент списка
+   this.beg = { nxt:this.end }; // указатель на фиктивный первый элементы списка
+   this.end.prv = this.beg;
+
+   this.length = 0;             // число узлов в списке
+
+   if(nm !== undefined)
+      this.push(nm);
+}
+</pre>
+Функции добавления в начало и конец реализованы следующим образом:
+<div style="overflow:hidden">
+<div style="float:left; width:48%">
+<pre class="brush: js">
+List2.prototype.unshift = function (nm)
+{
+   this.length++;
+   this.beg.nxt = {nm: nm, prv:this.beg,
+                           nxt:this.beg.nxt};
+}
+</pre>
+</div>
+<div style="float:left;">
+<pre class="brush: js">
+List2.prototype.push = function (nm)
+{
+   this.length++;
+   this.end.nm = nm;
+   this.end = this.end.nxt = { prv:this.end };
+}
+</pre>
+</div>
+</div>
+Приведём также функции удаления из конца и начала:
+<div style="overflow:hidden">
+<div style="float:left; width:48%">
+<pre class="brush: js">
+List2.prototype.pop = function ()
+{
+   if(this.length===0)
+      return;
+   this.length--;
+
+   this.end = this.end.prv;
+   return this.end.nm;
+}
+</pre>
+</div>
+<div style="float:left;">
+<pre class="brush: js">
+List2.prototype.shift = function ()
+{
+   if(this.length===0)
+      return;
+   this.length--;
+
+   this.beg = this.beg.nxt;
+   return this.beg.nm;
+}
+</pre>
+</div>
+<div style="clear:left;"></div>
+</div>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="speed"></a>
+<h2>Тестирование быстродействия</h2>
+
+<p>
+Ниже тестируется вставка в начало и конец списка, реализованного массивом (медленный <b class="norm">unshift</b>) и правосторонними (<b class="norm">List</b>, <b class="norm">List1</b>) и двухсторонним списком (<b class="norm">List2</b>).
+Как организовать процесс тестирования описано в документе <a href="LongCalc.html">Speed</a>.
+</p>
+<p>
+<input type="button" value="run" onClick="spd.run(this);">
+<input type="text" id="speedArrNum" value="100000"  style="width:5em;text-align:center;"> добавлений
+<input type="text" id="speedArrIters" value="10"  style="width:5em;text-align:center;"> раз: (ms) ( цикл: <b class="norm" id="loopID"></b>)<br>
+<table id="tableOut1" class="right norm">
+   <tr> <th style="width:7em"></th> <th><b class="norm"> push</b></th> <th><b class="norm">unshift</b></th>  </tr>
+   <tr> <th><b class="black">Array</b></th> <td> <b class="red" id="speedArr_ID0">13</b> </td> <td><b class="red" id="speedArr_ID1">9088</b> </td>  <td>&emsp; </td>  <td style="text-align:left"> Обычный массив JavaScript</td></tr>
+   <tr> <th><b class="black">List</b></th> <td>  <b class="red" id="speedArr_ID2">25</b> </td> <td><b class="red" id="speedArr_ID3">15</b> </td>   <td>&emsp; </td>  <td style="text-align:left"> Односторонний список <b class="norm">List</b></td></tr>
+   <tr> <th><b class="black">List2</b></th> <td> <b class="red" id="speedArr_ID4">30</b> </td> <td><b class="red" id="speedArr_ID5">25</b> </td>    <td>&emsp; </td>  <td style="text-align:left"> Двухсторонний список <b class="norm">List2</b></td></tr>
+   <tr> <th><b class="black">List0</b></th> <td> <b class="red" id="speedArr_ID6">47</b> </td> <td><b class="red" id="speedArr_ID7">34</b> </td>   <td>&emsp; </td>  <td style="text-align:left"> Односторонний список <b class="norm">List</b> без инициализаций null</td> </tr>
+   <tr> <th><b class="black">List1</b></th> <td> <b class="red" id="speedArr_ID8">49</b> </td> <td><b class="red" id="speedArr_ID9">33</b> </td>   <td>&emsp; </td>  <td style="text-align:left"> Односторонний список <b class="norm">List</b> с "нефиктивными" <b class="norm">beg</b> и <b class="norm">end</b></td> </tr>
+</table>
+<script>
+function Speed(out, pars)                         //*** out - id вывода и pars - id параметров
+{
+   this.state   = 0;                              // текущее состояние вычислений
+   this.timerID = null;                           // id таймера, который вызывет функцию timer
+   this.out     = document.getElementById(out);   // объект html-страницы для вывода
+   this.btn     = null;                           // кнопка запуска вычислений
+   this.period  = 100;                            // период вызова таймера в ms
+   if(pars){
+      this.pars  = new Array(pars.length);        // массив параметров (если они есть)
+      for(var i=pars.length; i--; )
+         this.pars[i] = Number(document.getElementById(pars[i]).value);
+   }
+}
+
+Speed.prototype.run = function(btn)               //*** вызываем из кнопки для запуска или остановки
+{
+   if(this.timerID === null){                     // создаём таймер
+      this.timerID = setInterval(this.timer.bind(this), this.period);
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+
+Speed.prototype.stop = function()                 //*** вызываем для остановки таймера
+{
+   clearInterval(this.timerID);                   // убиваем  таймер
+   this.timerID = null;                           // обнуляем ID таймера
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+
+Speed.prototype.init = function()
+{
+   var tbl =  this.out, num=0;
+   for(var r=1; r < tbl.rows.length; r++)         // очищаем таблицу
+      for(var c=1; c < 3; c++){
+         tbl.rows[r].cells[c].innerText = "";
+         num++;
+      }
+
+   this.state = 0;                                // номер текущих вычислений
+   this.loop  = 0;                                // количество циклов
+   this.sumTime = new Array(num);
+   this.cntCalc = new Array(num);
+   for(var i = 0; i < num; i++)
+      this.sumTime[i] = this.cntCalc[i] = 0;
+}
+
+Speed.prototype.timer = function()
+{
+   var tbl =  this.out, r, c, res;
+   var num = this.pars[0], iters = this.pars[1];
+   var time = window.performance.now();
+   switch(this.state){
+      case 0: // первые вычисления
+         for(var it = 0; it < iters; it++){
+            var lst = [];
+            for(var i=0; i<num; i++)
+               lst.push(i);
+         }
+         r=1; c=1;
+         break;
+      case 1: // вторые вычисления
+        for(var it = 0; it < iters; it++){
+            var lst = [];
+            for(var i=0; i<num; i++)
+               lst.unshift(i);
+         }
+         r=1; c=2;
+         break;
+      case 2: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+         }
+         r=2; c=1;
+         break;
+      case 3: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List();
+            for(var i=0; i<num; i++)
+               lst.unshift(i);
+         }
+         r=2; c=2;
+         break;
+     case 4: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List2();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+         }
+         r=3; c=1;
+         break;
+     case 5: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List2();
+            for(var i=0; i<num; i++)
+               lst.unshift(i);
+         }
+         r=3; c=2;
+         break;
+     case 6: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List0();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+         }
+         r=4; c=1;
+         break;
+     case 7: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List0();
+            for(var i=0; i<num; i++)
+               lst.unshift(i);
+         }
+         r=4; c=2;
+         break;
+     case 8: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List0();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+         }
+         r=5; c=1;
+         break;
+     case 9: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List0();
+            for(var i=0; i<num; i++)
+               lst.unshift(i);
+         }
+         r=5; c=2;
+         break;
+      default:
+         if(this.loop++ > 1000)
+            this.stop();                          // останавливаемся
+   }
+   time = window.performance.now() - time;        // время вычислений
+   this.cntCalc[this.state]++;
+   this.sumTime[this.state] += time;              // вывод времени вычислений
+   tbl.rows[r].cells[c].innerText=(this.sumTime[this.state]/this.cntCalc[this.state]).toFixed(0);
+   document.getElementById('loopID').innerText=this.cntCalc[0];
+   this.state++;
+   if(this.state >= this.sumTime.length)
+      this.state = 0;                             // начинаем по-новой
+}
+
+var spd = new Speed('tableOut1', ['speedArrNum', 'speedArrIters']);     // id объекта вывода и массив входных параметров
+</script>
+</p>
+
+
+<p>
+Ещё один тест связан с последовательной вставкой всех элементов в конец, а затем их удалением из конца и начала списка:
+</p>
+<p>
+<input type="button" value="run" onClick="spd2.run(this);">
+<input type="text" id="speedArrNum2" value="10000"  style="width:5em;text-align:center;"> добавлений
+<input type="text" id="speedArrIters2" value="100"  style="width:5em;text-align:center;"> раз: (ms) ( цикл: <b class="norm" id="loopID2"></b>)<br>
+<table id="tableOut2" class="right norm">
+   <tr> <th style="width:7em"></th> <th><b class="norm"> push,pop</b></th> <th><b class="norm">push,shift</b></th>  </tr>
+   <tr> <th><b class="black">Array</b></th> <td> <b class="red" id="speedArr2_ID0">19</b> </td> <td><b class="red" id="speedArr2_ID1">147</b> </td>   <td>&emsp; </td>  <td style="text-align:left"> Обычный массив JavaScript</td> </tr>
+   <tr> <th><b class="black">List</b></th> <td>  <b class="red" id="speedArr2_ID2">10693</b> </td> <td><b class="red" id="speedArr2_ID3">13</b> </td>  <td>&emsp; </td>  <td style="text-align:left"> Односторонний список <b class="norm">List</b></td> </tr>
+   <tr> <th><b class="black">List2</b></th> <td> <b class="red" id="speedArr2_ID4"> 22</b> </td> <td><b class="red" id="speedArr2_ID5">30</b> </td>  <td>&emsp; </td>  <td style="text-align:left"> Двухсторонний список <b class="norm">List2</b></td></tr>
+</table>
+<script>
+var spd2 = new Speed('tableOut2', ['speedArrNum2', 'speedArrIters2']);     // id объекта вывода и массив входных параметров
+spd2.timer = function()
+{
+   var tbl =  this.out, r, c, res;
+   var num = this.pars[0], iters = this.pars[1];
+   var time = window.performance.now();
+   switch(this.state){
+      case 0: // первые вычисления
+         for(var it = 0; it < iters; it++){
+            var lst = [];
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.pop();
+         }
+         r=1; c=1;
+         break;
+      case 1: // вторые вычисления
+        for(var it = 0; it < iters; it++){
+            var lst = [];
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.shift();
+         }
+         r=1; c=2;
+         break;
+      case 2: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.pop();
+         }
+         r=2; c=1;
+         break;
+      case 3: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.shift();
+         }
+        r=2; c=2;
+         break;
+     case 4: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List2();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.pop();
+         }
+         r=3; c=1;
+         break;
+     case 5: //
+        for(var it = 0; it < iters; it++){
+            var lst = new List2();
+            for(var i=0; i<num; i++)
+               lst.push(i);
+            for(var i=0; i<num; i++)
+               lst.shift();
+         }
+         r=3; c=2;
+         break;
+      default:
+         if(this.loop++ > 1000)
+            this.stop();                          // останавливаемся
+   }
+   time = window.performance.now() - time;        // время вычислений
+   this.cntCalc[this.state]++;
+   this.sumTime[this.state] += time;              // вывод времени вычислений
+   tbl.rows[r].cells[c].innerText=(this.sumTime[this.state]/this.cntCalc[this.state]).toFixed(0);
+   document.getElementById('loopID2').innerText=this.cntCalc[0];
+   this.state++;
+   if(this.state >= this.sumTime.length)
+      this.state = 0;                             // начинаем по-новой
+}
+</script>
+
+</p>
+<p>
+Общий вывод такой: для операций <b class="norm">push</b>, <b class="norm">unshift</b> и <b class="norm">shift</b>,
+которые активно используются в алгоритмах поиска в ширину или глубину, стоит использовать класс <b class="norm">List</b>.
+Однако, если необходимо часто удалять элементы из конца списка <b class="norm">pop</b>, то <b class="norm">List</b> лучше не использовать.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="ref"></a>
+<h2>Работа со списками</h2>
+
+<p>
+Подытожим.
+Методы работы со списками полностью аналогичны методам работы с массивами:
+<div style="overflow:hidden; margin-top:-1em;">
+<div style="float:left; width:580px; ">
+<style>.class_name_demo{ line-height:1em;}</style>
+<pre class="brush: js; class-name: 'class_name_demo'">
+   var res = "";
+   var lst = new List2();
+   for(var i=0; i < 7; i++)
+      lst.push(i);
+   res += 'число узлов:'+ lst.length+ '<br>' + lst+'<br>';
+   lst.reverse();
+   res +=  lst+'<br>';
+   res += lst.pop()+ ': ' + lst+'<br>';
+   res += lst.node(2).nm + '<br>';
+   lst.put(2,"a");      res += lst+'<br>';
+   res += lst.get(0)+'<br>';
+   lst.insert(0,"b");   res += lst+'<br>';
+   res += lst.remove(0) + ": " + lst+'<br>';
+   res += lst.remove(2) + ": " + lst+'<br>';
+   lst.reverse();
+   res += lst+'<br><br>'
+   res += ListShow(lst);
+   return res;
+</pre>
+</div>
+<div id="exmp2_outID" style="float:right;">
+<pre class="outJS" style="width:22em">
+<script>
+function exmpl2()
+{
+   var res = "";
+   var lst = new List2();
+   for(var i=0; i < 7; i++)
+      lst.push(i);
+   res += 'число узлов:'+ lst.length+ '<br>' + lst+'<br>';
+   lst.reverse();
+   res +=  lst+'<br>';
+   res += lst.pop()+ ': ' + lst+'<br>';
+   res += lst.node(2).nm + '<br>';
+   lst.put(2,"a");      res += lst+'<br>';
+   res += lst.get(0)+'<br>';
+   lst.insert(0,"b");   res += lst+'<br>';
+   res += lst.remove(0) + ": " + lst+'<br>';
+   res += lst.remove(2) + ": " + lst+'<br>';
+   lst.reverse();
+   res += lst+'<br><br>'
+   res += ListShow(lst);
+   return res;
+}
+document.write(exmpl2() );
+</script>
+
+</pre>
+</div>
+</div>
+</p>
+<p>
+Чтобы классы <b class="norm">List</b> (односторонний список) и <b class="norm">List2</b> (двухсторонний список) стали доступными,
+необходимо подключить модуль <a href="../_js/list.html"><b class="norm">list.js</b></a>.
+Приведём в справочных целях все методы этих классов:
+<ul>
+<li><b class="blue2">toString</b><b class="black">()</b> -  вывести список как строку <b class="norm">(nm0, nm1, n2,...).</b></li>
+<li><b class="blue2">push</b><b class="black">(nm)</b> - добавить узел с именем <b class="norm">nm</b> в конец списка. </li>
+<li><b class="blue2">unshift</b><b class="black">(nm)</b> - добавить узел с именем <b class="norm">nm</b> в начало списка. </li>
+<li><b class="blue2">add</b><b class="black">(nm)</b> - добавить узел с именем <b class="norm">nm</b> с начала списка, выдерживая его упорядоченным (функция <b class="norm">lt</b>). </li>
+<li><b class="blue2">pop</b><b class="black">()</b> -  получить поле <b class="norm">nm</b> последнего узла и убрать его из списка.</li>
+<li><b class="blue2">shift</b><b class="black">()</b> - получить поле <b class="norm">nm</b> первого узла и убрать его из списка. </li>
+<li><b class="blue2">reverse</b><b class="black">()</b> -  перевернуть последовательность узлов в списке.</li>
+<li><b class="blue2">node</b><b class="black">(pos)</b> - получить узел под номером pos в списке (начиная с нуля). </li>
+<li><b class="blue2">get</b><b class="black">(pos)</b> - получить значение поля <b class="norm">nm</b> узла на месте <b class="norm">pos</b> в списке (начиная с нуля). </li>
+<li><b class="blue2">put</b><b class="black">(pos, nm)</b> - поменять поле <b class="norm">nm</b> узла месте <b class="norm">pos</b> в списке (начиная с нуля). </li>
+<li><b class="blue2">insert</b><b class="black">(pos, nm)</b> - добавить узел с именем <b class="norm">nm</b> на место <b class="norm">pos</b> в списке (начиная с нуля), сдвинув всё вправо. </li>
+<li><b class="blue2">remove</b><b class="black">(pos)</b> -  удалить узел на месте <b class="norm">pos</b> в списке (начиная с нуля) и вернуть его <b class="norm">nm</b>.</li>
+
+</ul>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Метод грубой силы", "Force.html",   "Бинарные деревья", "BST.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Lists.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:09 GMT -->
+</html>

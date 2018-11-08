@@ -1,0 +1,354 @@
+body {
+  font-size:16px;
+  line-height:20px;
+  font-family:Georgia, Arial, Helvetica, Sans-Serif;
+  color:#000;
+  background:url(../_im/body-bg.gif) repeat 0 0;
+}
+a {
+  color:#0000AA;
+  text-decoration:none;
+  cursor:pointer;
+}
+a:hover { text-decoration:underline; }
+a img {  border:0;  }
+
+sup {  line-height:14px; outline: 0; vertical-align: top;}
+sub {  line-height:14px; outline: 0; vertical-align: bottom;}
+
+div.page{ page-break-after: always; page-break-inside: avoid; }
+
+table { font-size:1em;  }
+
+table.press td, table.press th   { line-height:0.9em; height:0.9em; }
+table.w1 td,    table.w1 th        { width:1em; }
+table.w1_5 td,  table.w1_5 th     { width:1.5em; }
+table.w2 td,    table.w2 th        { width:2em; }
+table.w3 td,    table.w3 th        { width:3em; }
+
+table.border       {   border-collapse: collapse;  }
+table.border th,
+table.border td   {  border: 1px solid #000; padding: 0 3px; }
+
+table.borderTD       {  border-collapse: collapse;  }
+table.borderTD td   {  border: 1px solid #000; padding: 0 3px; }
+
+table.borderTH       { border-collapse: collapse;  }
+table.borderTH th   { border: 1px solid #000; padding: 0 3px; }
+
+
+table.center             {  margin:auto}
+
+table.centerTH th, 
+table.centerTD td  { text-align: center; }
+
+table.rightTH   tr th, 
+table.rightTD   tr td  { text-align: right; }
+
+table.leftTH   tr th, 
+table.leftTD   tr td  { text-align: left; }
+
+table.topTH tr th, 
+table.topTD tr td  { vertical-align:top; }
+
+blockquote {  color:#008800; }
+blockquote.s3def 
+{  
+   width:80%;
+   color:#008800; 
+   border: 2px solid #008800; 
+   border-radius: 5px;
+   padding: 10px;
+} 
+
+textarea{
+   font-family:  "Consolas", "Courier New", monospace;
+   font-size:0.9em;
+}
+
+/* применимо везде, можно комбинировать <table class="blue bold">синиий нежирный</table>  */
+.norm     {  font-family: "Consolas", "Courier New", monospace; }
+.red      {  font-family: "Consolas", "Courier New", monospace; color: red;   }
+.blue     {  font-family: "Consolas", "Courier New", monospace; color: blue;  }
+.blue2    {  font-family: "Consolas", "Courier New", monospace; color: #069;  }
+.green    {  font-family: "Consolas", "Courier New", monospace; color: green; }
+.bold     {  font-weight: bold; }
+.compress { font-weight: normal; font-family:"Consolas", "Courier New", monospace; letter-spacing: -2px;}
+
+.outJS { font-family: "Consolas", "Courier New", monospace; color: #050; line-height:1em;  border: 1px solid #AAA; border-radius: 5px; padding:5px;}
+
+/* можно комбинировать <b class="blue norm">синиий нежирный</b>  */
+b.overline   { font-family: "Consolas", "Courier New", monospace; font-weight: normal; text-decoration: overline; }
+b.underline  { font-family: "Consolas", "Courier New", monospace; font-weight: normal; text-decoration: underline; }
+b.norm       { font-family: "Consolas", "Courier New", monospace; font-weight: normal; }
+b.black      { font-family: "Consolas", "Courier New", monospace; color: black; }
+b.blue       { font-family: "Consolas", "Courier New", monospace; color: blue;  }
+b.green      { font-family: "Consolas", "Courier New", monospace; color: green; }
+b.red        { font-family: "Consolas", "Courier New", monospace; color: red;   }
+
+div.norm     { font-family: "Consolas", "Courier New",  monospace;  font-size:0.9em;  }
+div.overline { font-family: "Consolas", "Courier New",  monospace; font-size:0.9em; text-decoration: overline; }
+div.block    {  overflow:auto; width:100% }
+div.blockLF  {  float:left;  width:50%}
+div.blockRT  {  float:right; width:50%}
+
+h1 { color:#663300; font-size:2em; }
+h2 { color:#993300; }
+h3 { color:#AA3300; }
+
+ul.contents a {
+   color:green;
+   font-weight: bold; 
+}
+
+.LearnJS          { float:right; border: 2px solid green; border-radius: 10px; margin:5px;  padding: 5px;}
+.LearnJS b.title  { font-family: "Consolas", "Courier New", monospace; color: green; font-weight: bold;}
+
+/****************************************************************************************
+*                                   Элементы управления
+*****************************************************************************************/
+input.button{
+   height:1em;
+   padding:0em 0.5em 1.2em 0.5em; 
+   vertical-align:bottom;
+   font-weight: bold;
+}
+
+/* красивое поле ввода с рамочкой только при фокусе */
+input[type=text], textarea {   
+   outline: none; 
+   padding: 2px; 
+   margin:  3px;    
+   border:  0px;    
+   border-bottom: 1px dotted blue;
+} 
+input[type=text]:focus, textarea:focus { 
+   border-color:#56b4ef; 
+   box-shadow:         inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6); 
+   -webkit-box-shadow: inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6); 
+   -moz-box-shadow:    inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6); 
+} 
+
+/****************************************************************************************
+*                                      Основные блоки окна
+*****************************************************************************************/
+
+#container {               /* Общий стиль окна сайта */
+   margin: 10px auto;
+   left: 50%;              /* Отступ в процентах от левого края окна */
+   width: 1000px;
+   border:1px solid #e8e8e8;
+   background: #FFFFFF;
+}
+
+#header {                  /* Полоска для горизонтального выпадающего меню */
+   background:url(../_im/header-bg.gif) repeat-x 0 0;
+   border:1px solid #e8e8e8;
+   width: 100%;
+   height: 26px;
+}
+
+#content {                /* Основное информационное содержание */
+   float: left;
+   padding-left: 15px;
+   width:  97%;
+   overflow: hidden;
+}
+
+#navigation {
+   width: 100%;
+   height: 5%;
+}
+
+#menu {
+   border:1px solid #e8e8e8;
+   font-size:0.80em;
+   float: left;
+   width:  25%;
+   height: 80%;
+}
+.menu_text {
+   width: 95%;
+}
+#advert {
+   border:1px solid #e8e8e8;
+   float: right;
+   width:  18%;
+   height: 80%;
+}
+
+#clear {
+   clear:both;
+}
+#footer {
+   background: #FFFFFF;
+   border:1px solid #e8e8e8;
+   width: 100%;
+   height: 3%;
+}
+
+.section {
+   margin-left: 20;
+   width: 95%;
+}
+.block {
+   width:95%;
+}
+.ul_menu {
+    padding: 0;       /* Убираем поля */
+    margin-left: 20px; /* Отступ слева */
+}
+/****************************************************************************************
+*                                      Бордюр и тенюшки
+*****************************************************************************************/
+.border {
+   border:1px solid #e8e8e8;
+   background:#fff;
+   position:relative;
+}
+.shadow-l {
+   background:url(../_im/shadow-l.html) no-repeat 0 0;
+   width:25px;
+   height:686px;
+   position:absolute;
+   top:0;
+   left:-25px;
+}
+.shadow-r {
+   background:url(../_im/shadow-r.html) no-repeat 0 0;
+   width:25px;
+   height:686px;
+   position:absolute;
+   top:0;
+   right:-25px;
+}
+.shadow-b {
+   background:url(../_im/shadow-b.html) no-repeat 0 0;
+   width:980px;
+   height:20px;
+   position:absolute;
+   bottom:-20;
+   left:0;
+}
+/****************************************************************************************
+*                                      Всплывающие хинты
+* Использование:
+* <div class="tooltip">Hover over me <span class="tooltiptext">Tooltip text</span> </div>
+*****************************************************************************************/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    border:2px solid #e8e8e8;
+    width: 500px;
+    height:100px;
+    background-color: ffffaa;
+    color: #0000ff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    top: 20px;
+    margin-left: -60px;
+}
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    border:2px solid #e8e8e8;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: ffffaa transparent transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+/****************************************************************************************
+*                             Горизонтальное выпадающее меню
+*
+* http://codepen.io/philhoyt/pen/ujHzd
+* http://ruseller.com/lessons.php?rub=2&id=2031
+****************************************************************************************/
+#primary_nav_wrap{
+  margin-top:2px;
+   border:   0;
+}
+#primary_nav_wrap ul{
+  list-style:none;
+  position:  relative;
+  float:     left;
+  margin:    0;
+  padding:   1px;
+  border:    1px solid gray;
+}
+#primary_nav_wrap ul a{
+  display:   block;
+  color:     #333;
+  text-decoration:none;
+  font-weight:700;
+  font-size:  12px;
+  line-height:18px;
+  padding:    0 5px;
+  font-family:"HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif
+}
+#primary_nav_wrap ul li{
+  position:relative;
+  float:left;
+  margin:0;
+  padding:0
+}
+#primary_nav_wrap ul li.current-menu-item{
+  background:#ddd
+}
+#primary_nav_wrap ul li:hover{
+  /*background:#f6f6f6;*/
+  background:#BBBBFF;
+}
+#primary_nav_wrap ul ul{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;
+  background:#fff;
+  padding:0
+}
+#primary_nav_wrap ul ul li{
+  float:none;
+  width:200px
+}
+#primary_nav_wrap ul ul a{
+  line-height:120%;
+  padding: 5px 5px
+}
+#primary_nav_wrap ul ul ul{
+  top:0;
+  left:100%
+}
+#primary_nav_wrap ul li:hover > ul{
+  display:block
+}
+/****************************************************************************************
+*                         Стили для графического отображения дерева
+*****************************************************************************************/
+.tree {
+   font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+   font-size: 12px;          /* размер шрифта */
+   line-height:normal;       /* если в документе была изменена */
+   white-space: nowrap;      /*  перевод строки никогда не будет вставлен */
+   overflow: auto;           /* при переполнении полоса прокрутки */
+}
+.tree .block {
+   display:block;            /* div-ки прижимаются друг к другу снизу */
+}
+.tree img {
+   border: 0px;
+   vertical-align: middle;   /* картинки центрируются по веритикали */
+}

@@ -1,0 +1,483 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Graphs.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:03 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Графы</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+
+<script type="application/javascript"   src="../../_js/graph.js"></script>      <!-- работа с графами  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- функции рисования  -->
+<script type="application/javascript"   src="../../_js/ms.js"></script>         <!-- математические функции  -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Графы</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#repr">  Представление графов</a></li>
+   <li><a href="#repr2">  Немного определений</a></li>
+   <li><a href="#gen">   Генерация больших графов</a></li>
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+    <li><a href="#ref"> Класс <b class="norm">Graph</b></a></li>
+    <ul>
+       <li><a href="#ref1"> Создание и изменение графов</a></li>
+       <li><a href="#ref2"> Информация о графе</a></li>
+       <li><a href="#ref3">  Алгоритмы на графе</a></li>
+       <li><a href="#ref4"> Отображение графа</a></li>
+
+    </ul>
+</ul>
+</div>
+</div>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="repr"></a>
+<h2>Представление графов</h2>
+<p>
+<i>Граф</i> - является множеством вершин (узлов) и рёбер,  которые соединяет пару различных вершин.
+Будем описывать граф  массивом узлов <b class="norm">nodes</b>, каждый из которых содержит
+массив <b class="norm">go</b> с номерами узлов в которые можно  перейти непосредственно из данного.
+В отличие от <a href="Lists.html">списков</a> и <a href="Trees.html">деревьев</a>, графы имеют сложную топологию, поэтому
+для  их визуализации необходимо задать координаты <b class="norm">x</b> и <b class="norm">y</b> каждого узла.
+Узел также может иметь имя <b class="norm">nm</b> и хранить другие данные.
+Граф реализован классом <a href="../../graph.html"><b class="norm">Graph</b></a>. Его можно задать по другому графу или массиву узлов, как в этом примере:
+
+<div style="overflow:hidden">
+<div style="float:left; margin-top:-1em;">
+<pre class="brush: js">
+var g = new Graph( [
+                      { nm:0,  go:[1],   x:50,  y:0 },
+                      { nm:1,  go:[2],   x:0,   y:87},
+                      { nm:2,  go:[0,1], x:100, y:87},
+                   ]
+                 );
+document.write(g.getSVG());   // рисуем как svg-картинку
+</pre>
+</div>
+<div style="float:right; width:300px;">
+<script>
+var g = new Graph(
+                   [
+                      { nm:0,  go:[1],   x:50,  y:0 },
+                      { nm:1,  go:[2],   x:0,   y:87},
+                      { nm:2,  go:[0,1], x:100, y:87},
+                   ]
+                 );
+g.labels = [{ nm:"g", x:50, y:53}];
+document.write(g.getSVG());                       // рисуем как svg-картинку
+</script>
+</div>
+</div>
+Если связи между двумя узлами направлены в обе стороны (как в случае с узлами <b class="norm">1</b> и <b class="norm">2</b>),
+то при рисовании графа на таком ребре стрелки не ставятся.
+Ребро, соединяющее узел <b class="norm">2</b> и <b class="norm">0</b> - направленное (из узла <b class="norm">2</b> в <b class="norm">0</b>
+перейти можно, а вот обратно - нет).
+</p>
+<p>
+Ещё один способ, создание графов в классе <a href="../../graph.html"><b class="norm">Graph</b></a> - это задание числа его узлов, а затем постепенное добавление рёбер:
+<pre class="brush: js">
+g = new Graph();                                  // пустой граф
+g.create(6, 50);                                  // 6 несвязных узлов по окружности радиуса 50
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;");
+for(var i=0; i < g.numNodes(); i++)
+   g.bind(i, i+1===g.numNodes()?0: i+1);          // задём двухсторонние связи между соседними узлам
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;");
+g.insertNode(1,4);                                // вставляем узел с рёбрами между узлами 1 и 4
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;");
+g.addRib(6,5);                                    // добавляем направленное ребро от 6 к 5
+g.addRib(6,2);                                    // аналогично от 6 к 2
+document.write(g.getSVG());                       // результирующий граф (последняя svg-картинка)
+</pre>
+<center>
+<script>
+g = new Graph();                                  // пустой граф
+g.create(6, 50);                                  // 6 несвязных узлов по окружности радиуса 50
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;"); // выводим как svg-картинку
+for(var i=0; i < g.numNodes(); i++)
+   g.bind(i, i+1===g.numNodes()?0: i+1);          // задём двухсторонние связи между соседними узлам
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;"); // снова выводим
+g.insertNode(1,4);                                // вставляем узел с рёбрами между узлами 1 и 4
+document.write(g.getSVG(), "&emsp;&emsp;&emsp;");
+g.addRib(6,5);                                    // добавляем направленное ребро от 6 к 5
+g.addRib(6,2);                                    // аналогично от 6 к 2
+document.write(g.getSVG());                       // результирующий граф (последняя svg-картинка)
+</script>
+</center>
+</p>
+<p>
+При создании графов можно также пользоваться <a href="graph_editor.html">редактором</a>.
+</p>
+<p>
+Большинству алгоритмов достаточно знать только узлы в которые можно перейти из данного.
+Однако, в ряде случаев необходима обратная информация - массив узлов из которых можно попасть в данный.
+Такие массивы <b class="norm">on</b> (в каждом узле) строятся по массивам <b class="norm">go</b> при помощи функции
+<b class="norm">g.createOn()</b>. В общем случае, узел может иметь следующие свойства:
+<pre class="brush: js">
+  nm  : 0,                      // имя узла
+  go  : [1,2],                  // узлы в которые можно перейти
+
+  x:200, y:100,                 // координаты узла
+
+  on  : [3],                    // узлы из которых можно попасть в данный
+  w   : [3,3],                  // толщина рёбер (визуализация)
+  d   : [7,3],                  // длина рёбер ("стоимость" перемещения по ребру)
+  chk : 1,                      // пометка узла (служит, например, для его покраски)
+  cols: ["#000", "#F00"]        // массив rgb цветов исходящих рёбер (визуализация)
+  col : "#00F"                  // rgb цвет заливки узла (визуализация)
+</pre>
+По умолчанию, цвет узла равен <b class="norm">Graph.svg.cFill="#FFC"</b>.
+Если задан массив цветов <b class="norm">Graph.svg.colors</b> и у узла есть пометка <b class="norm">chk</b>,
+то он красится цветом под номером <b class="norm">chk</b> из этого массива.
+Другой способ покраски узлов и рёбер - это прямое задание свойств <b class="norm">col</b> и <b class="norm">cols</b> каждого узла.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="repr2"></a>
+<h2>Немного определений</h2>
+
+<p>
+Однонаправленное ребро графа иногда называют <i>дугой</i>, а двунаправленное - собственно <i>ребром</i>.
+Граф, состоящий из <b class="norm">V</b> узлов ( == вершин), содержит не более <b class="norm">V&middot;(V-1)</b> рёбер (считая двунаправленное ребро, как два ребра).
+Два графа называют <i>изоморфными</i>, если с точностью до имён узлов их топология (число узлов и способы их соединений) совпадает.
+</p>
+<p>
+<i>Путь</i> на графе - это множество вершин в которые можно попасть последовательно одна за одной.
+Если все вершины и рёбра составляющие путь различны, то он называется <i>простым путём</i>.
+Ниже вершины <b class="norm">0,1,2</b> составляют путь.
+<i>Цикл</i>  - это простой замкнутый путь (начинающийся и кончающийся на одной и той же вершине.
+На втором рисунке это <b class="norm">1,3,4</b>:
+<center>
+<script>
+g = new Graph(
+[
+{nm:0,go:[1],x:24,y:24,w:[3]},
+{nm:1,go:[2,3],x:114,y:24,w:[3,1]},
+{nm:2,go:[],x:204,y:24},
+{nm:3,go:[4],x:164,y:94},
+{nm:4,go:[1],x:74,y:94}
+]);
+document.write(g.getSVG(),"&emsp;&emsp;&emsp;&emsp;&emsp;");
+g = new Graph(
+[
+{nm:0,go:[1],x:24,y:24},
+{nm:1,go:[2,3],x:114,y:24,w:[1,3]},
+{nm:2,go:[],x:204,y:24},
+{nm:3,go:[4],x:164,y:94,w:[3]},
+{nm:4,go:[1],x:74,y:94,w:[3]}
+]);
+g.createDist();
+document.write(g.getSVG());
+</script>
+</center>
+</p>
+<p>
+Граф состоящий из двунаправленных рёбер называется <i>связным</i>, если из каждого узла существует путь в любой другой узел.
+При наличии односторонних рёбер пути может не быть (выше, например из <b class="norm">4</b> в <b class="norm">0</b>),
+но этот граф по-прежнему является связным.
+Несвязный граф состоит из набора связных (внутри себя) подграфов.<br>
+<i>Ацикличный</i> граф не содержит внутри себя циклов (он также называется <i>лесом</i>). Если  в ациклическом
+графе существует единственный узел из которого можно попасть в любой другой (причём единственным образом),
+то такой граф называется <a href="Trees.html">деревом</a>.
+<center>
+<script>
+var acicl = new Graph([
+{nm:0,go:[1],x:114,y:24},
+{nm:1,go:[2,3],x:114,y:94},
+{nm:2,go:[4],x:64,y:134},
+{nm:3,go:[4],x:164,y:134},
+{nm:4,go:[],x:114,y:184},
+{nm:5,go:[1],x:24,y:24},
+{nm:6,go:[1],x:204,y:24}
+]);
+document.write(acicl.getSVG());
+document.write("&emsp;&emsp;&emsp;&emsp;&emsp;")
+var tree = new Graph(
+[{nm:0,x:120.5,y:10.5,go:[1,2,3]},{nm:1,x:50.5,y:60.5,go:[7,6]},{nm:2,x:120.5,y:60.5,go:[4]},{nm:3,x:180.5,y:60.5,go:[5,8,9]},{nm:4,x:120.5,y:130.5,go:[10]},{nm:5,x:180.5,y:130.5,go:[]},{nm:6,x:10.5,y:130.5,go:[]},{nm:7,x:80.5,y:130.5,go:[]},{nm:8,x:240.5,y:130.5,go:[12,11]},{nm:9,x:290.5,y:130.5,go:[]},{nm:10,x:120,y:170,go:[]},{nm:11,x:210,y:170,go:[]},{nm:12,x:270,y:170,go:[]}]
+);
+document.write(tree.getSVG());
+</script>
+</center>
+</p>
+
+<p>
+<i>Гамильтонов путь</i> -это простой путь, проходящий через <i>каждый</i> узел графа один раз.</br>
+<i>Эйлеров путь</i>  - проходит через <i>каждое</i> ребро в точности один раз.
+
+</p>
+
+
+<p>
+Некоторые вычислительные задачи, связанные с графами:
+<ul>
+   <li>Поиск кратчайшего пути.</li>
+   <li>Поиск самого длинного пути.</li>
+   <li>Проверка графа на связность.</li>
+   <li>Поиск гамильтонового пути (или доказательство его отсутствия).</li>
+   <li>Поиск эйлерового пути (или доказательство его отсутствия).</li>
+   <li>Проверка изоморфности двух графов (их тождественность без учёта имён узлов и их координат).</li>
+   <li>Планарность графа (возможность рисования его на плоскости без пересечения ребер и вершин).</li>
+   <li>Раскраска узлов графа в <b class="norm">k</b> цветов, чтобы ни одно ребро не соединяло узлы одинакового цвета.</li>
+</ul>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="gen"></a>
+<h2>Генерация больших графов</h2>
+
+<p>
+Большие графы задавать  "ручным" способом непросто, поэтому для тестирования алгоритмов удобны
+функции генерации графов произвольного размера.
+Например,  решётка шириной <b class="norm">w</b> узлов и высотой <b class="norm">h</b> узлов с длиной ребра <b class="norm">len</b> (в пикселях)
+создаётся функцией <b class="blue2">createGrid</b><b class="norm">(w,h,len, oneway)</b>. Четвёртый аргумент в функции (если он есть и равен <b class="norm">true</b>) делает рёбра графа направленными.
+Ниже приведены три варианта использования этой функции.
+В третьем случае, при рисовании графа, отключен вывод имён узлов (<b class="norm">Graph.svg.showNm = false</b>).
+Во втором случае функция <b class="norm">g.swapRibs(prob, ribs)</b> с вероятностью <b class="norm">prob</b> переворачивает в узле от одного до <b class="norm">ribs</b> рёбер:
+<table>
+<tr>
+<td>
+<pre class="brush: js">
+g.createGrid(4,3, 50, true);
+</pre>
+</td>
+<td>
+<pre class="brush: js">
+g.createGrid(4,3, 50, true);
+g.swapRibs(1, 1);
+</pre>
+</td>
+<td>
+<pre class="brush: js">
+g.createGrid(16,12, 10);
+</pre>
+</td>
+</tr>
+<tr>
+<td>
+&emsp;&emsp;&emsp;&emsp;
+<script>
+g = new Graph();
+g.createGrid(4,3, 50, true);
+g.createDist();
+document.write(g.getSVG());
+</script>
+</td>
+<td>
+&emsp;&emsp;&emsp;&emsp;
+<script>
+g = new Graph();
+g.createGrid(4,3, 50, true);
+g.swapRibs(1, 1);
+document.write(g.getSVG());
+</script>
+</td>
+<td>
+&emsp;&emsp;&emsp;&emsp;
+<script>
+g.createGrid(16,12, 10);
+Graph.svg.showNm = false;
+document.write(g.getSVG());
+Graph.svg.showNm = true;
+</script>
+</td>
+</tr>
+</table>
+</p>
+
+
+<p>
+Ещё один, более "дырявый" вариант - это граф в виде треугольника Серпинского
+<b class="blue2">createTriangle</b><b class="norm">(num, len)</b> с числом рекурсий num и стартовым ребром длиной <b class="norm">len</b> (в px):
+<center>
+<script>
+g = new Graph();
+g.createTriangle(1, 300);
+document.write(g.getSVG());
+</script>
+&emsp;&emsp;&emsp;&emsp;
+<script>
+g = new Graph();
+g.createTriangle(5, 300);
+Graph.svg.showNm = false;
+document.write(g.getSVG());
+Graph.svg.showNm = true;
+</script>
+</center>
+</p>
+<p>
+Приведём код этой функции:
+<pre class="brush: js">
+Graph.prototype.createTriangle = function(num, len)
+{
+   this.nodes = [                                 // начальный равносторонний треугольник
+      { nm:0, go:[1,2], x:len*0.5, y:0 },
+      { nm:1, go:[0,2], x:0,       y:len*0.866 },
+      { nm:2, go:[0,1], x:len,     y:len*0.866 }
+   ];
+   this.ribs  = [];                               // очищаем массив рёбр
+   this.createTri(num, 0,1,2);                    // вызываем рекурсивную функцию
+}
+</pre>
+Функция <b class="norm">createTri(num, k0, k1, k2)</b> внутри треугольника, образованного
+вершинами <b class="norm"> k0, k1, k2</b> рекурсивно <b class="norm">num</b> раз повторяет треугольник Серпинского:
+<pre class="brush: js">
+Graph.prototype.createTri = function(num, k0, k1, k2)
+{
+   if(num <= 0)                                   // рекурсия закончилась
+      return;
+
+   var k3 = this.insertNode(k0,k1);   this.nodes[k3].nm = k3;
+   var k4 = this.insertNode(k1,k2);   this.nodes[k4].nm = k4;
+   var k5 = this.insertNode(k0,k2);   this.nodes[k5].nm = k5;
+
+   this.bind(k3,k5);                              // связываем двухсторонним ребром
+   this.bind(k3,k4);
+   this.bind(k4,k5);
+   this.createTri(num-1, k0, k3, k5);             // для каждого из 3-х треугольников
+   this.createTri(num-1, k3, k1, k4);
+   this.createTri(num-1, k5, k4, k2);
+}
+</pre>
+</p>
+<p>
+Модифицированный треугольник Серпинского можно получить функцией <b class="norm">createTriangle2</b>:
+<center>
+<script>
+g = new Graph();
+g.createTriangle2(1, 300);
+g.createDist();
+document.write(g.getSVG());
+</script>
+&emsp;&emsp;&emsp;&emsp;
+<script>
+g = new Graph();
+g.createTriangle2(4, 300);
+Graph.svg.showNm = false;
+document.write(g.getSVG());
+Graph.svg.showNm = true;
+</script>
+</center>
+
+</p>
+<p>
+В уже построенном графе, функция <b class="blue2">delRibs</b><b class="norm">(prob, ribs)</b> с вероятностью <b class="norm">prob</b>
+в каждом узле ликвидирует от одного до <b class="norm">ribs</b> рёбер
+(с равномерным распределением). Ниже приведен пример скрипта <b class="norm">g.createGrid(50, 20, 10); g.delRibs(0.7, 1)</b>:
+<center>
+<script>
+g = new Graph();
+g.createGrid(50, 20, 10);
+g.delRibs(0.7, 1);
+Graph.svg.showNm = false;
+document.write(g.getSVG());
+Graph.svg.showNm = true;
+</script>
+</center>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="ref"></a>
+<h2>Класс <b class="norm">Graph</b></a></h2>
+
+<a id="ref1"></a>
+<h3>Создание и изменение графов</h3>
+
+<p>
+Для работы с графами, необходимо подключить два модуля: <b class="norm">graph.js</b> и <b class="norm">draw.js</b>
+(графическое отображение).
+</p>
+<ul>
+    <li><b class="blue2">clone</b><b class="black">(graph)</b> - задать граф по другому графу или массиву узлов <b class="norm">graph</b> </li>
+    <li><b class="blue2">create</b><b class="black">(nNodes, r)</b> - создать граф несвязных <b class="norm">nNodes</b> узлов, расположенных по окружности радиуса <b class="norm">r</b></li>
+    <li><b class="blue2">addNode</b><b class="black">(go, nm)</b> - добавить узел, вернув его номер, указав, при необходимости массив рёбер <b class="norm">go</b> и имя <b class="norm">nm</b></li>
+    <li><b class="blue2">addRib</b><b class="black">(i, j)</b> - добавить ребро, направленное из узла под номером <b class="norm">i</b> в узел <b class="norm">j</b> </li>
+    <li><b class="blue2">bind</b><b class="black">(i, j)</b> - добавить двухсторонее ребро между узлами под номерами <b class="norm">i</b> и <b class="norm">j</b> </li>
+    <li><b class="blue2">delRib</b><b class="black">(i, j)</b> - удалить ребро, направленное из узла под номером <b class="norm">i</b> в узел <b class="norm">j</b> </li>
+    <li><b class="blue2">delNode</b><b class="black">(i)</b> - удалить узел под номером <b class="norm">i</b> </li>
+    <li><b class="blue2">fullConnect</b><b class="black">()</b> - соеденить рёбрами все узлы со всеми </li>
+    <li><b class="blue2">createGrid</b><b class="black">(w,h, len, oneway)</b> -  создать граф в виде решётки шириной <b class="norm">w</b> узлов и высотой <b class="norm">h</b> узлов с длиной ребра <b class="norm">len</b> (в px); если задан <b class="norm">oneway</b>, то рёбра односторонние</li>
+    <li><b class="blue2">createHex</b><b class="black">(w,h, len)</b> -  создать граф в виде 6-угольной решётки шириной <b class="norm">w</b> узлов и высотой <b class="norm">h</b> узлов с длиной ребра <b class="norm">len</b> (в px);</li>
+    <li><b class="blue2">createTriangle</b><b class="black">(num, len)</b> - создать граф в виде треугольника Серпинского с числом рекурсий <b class="norm">num</b> и стартовым ребром <b class="norm">len</b></li>
+    <li><b class="blue2">createTriangle2</b><b class="black">(num, len)</b> - создать граф в виде модифицированного треугольника Серпинского с числом рекурсий <b class="norm">num</b> и стартовым ребром <b class="norm">len</b></li>
+    <li><b class="blue2">createHole</b><b class="black">(x,y, r)</b> -  удалить узлы внутри окружности радиуса <b class="norm">r</b> с центром в <b class="norm">x,y</b> (в уже существующем графе)</li>
+    <li><b class="blue2">delRibs</b><b class="black">(prob, ribs)</b> - удалить в узле c вероятностью <b class="norm">prob</b> от одного до <b class="norm">ribs</b> рёбер</li>  (с равной вероятностью)
+    <li><b class="blue2">insertNode</b><b class="black">(i, j, pos)</b> - вставить узел в ребро между двумя узлами, добавив, его, если ребра
+     не было. При <b class="norm">pos = 0.5</b> (по умолчанию) узел вставляется по средине ребра. В общем случае <b class="norm">pos=[0...1]</b></li>
+   <li><b class="blue2">swapRibs</b><b class="black">(prob, ribs)</b> - с вероятностью <b class="norm">prob</b> переворачивает в узле от одного до <b class="norm">ribs</b> рёбер</li>
+   <li><b class="blue2">set</b><b class="black">(par, val)</b> - установить каждому узлу графа свойство <b class="norm">par</b> в значение <b class="norm">val</b></li>
+   <li><b class="blue2">createOn</b><b class="black">()</b> - создать в каждом узле массивы входящих в него рёбер <b class="norm">on: []</b></li>
+   <li><b class="blue2">createDist</b><b class="black">()</b> - создать в каждом узле массивы длинн рёбер <b class="norm">d: []</b>, используя координаты узлов </li>
+   <li><b class="blue2">translate</b><b class="black">(dx,dy)</b> - cдвинуть координаты узлов на <b class="norm">dx,dy</b> </li>
+   <li><b class="blue2">scale</b><b class="black">(sx,sy)</b> - изменить масштаб для координат узлов в <b class="norm">sx,sy</b> раз</li>
+
+</ul>
+
+<a id="ref2"></a>
+<h3>Информация о графе</h3>
+
+<ul>
+   <li><b class="blue2">numNodes</b><b class="black">()</b> - возвращает число узлов графа</li>
+   <li><b class="blue2">numRibs</b><b class="black">()</b> - возвращает число рёбер графа (бежит по всем узлам)</li>
+   <li><b class="blue2">isRib</b><b class="black">(i, j)</b> - есть ли ребро из узла под номером  <b class="norm">i</b> в узел <b class="norm">j</b></li>
+   <li><b class="blue2">getNode</b><b class="black">(x, y, r)</b> - вернуть номер ближайшего к точке <b class="norm">x,y</b> узла, но не далее <b class="norm">r</b> (если он определён)</li>
+</ul>
+
+<a id="ref3"></a>
+<h3>Алгоритмы на графе</h3>
+<ul>
+   <li><b class="blue2">searchPathBeg</b><b class="black">(i, j)</b> - подготовиться к поиску пути от узла <b class="norm">i</b> к узлу <b class="norm">j</b></li>
+   <li><b class="blue2">searchPathRun</b><b class="black">()</b> - провести одну итерацию поиска пути; возвращает -1, если пути нет, 1 - если найден, иначе (продолжает поиск) - 0 </li>
+   <li><b class="blue2">searchPathEnd</b><b class="black">(path)</b> - закончить поиск пути, вернув массив последовательность узлов от <b class="norm">i</b> к <b class="norm">j</b>.</li>
+</ul>
+
+
+ <a id="ref4"></a>
+<h3>Отображение графа</h3>
+
+<ul>
+   <li><b class="blue2">getJSON</b><b class="black">()</b> - получить массив узлов в виде JSON структуры</li>
+   <li><b class="blue2">getSVG</b><b class="black">()</b> - получить граф в svg-формате</li>
+<!--
+    <li><b class="blue2">clone</b><b class="black">()</b> - </li>
+-->
+</ul>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Деревья", "Trees.html",   "", "");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Graphs.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:05 GMT -->
+</html>

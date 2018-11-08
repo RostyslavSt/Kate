@@ -1,0 +1,450 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/LongCalc.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:15 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Длительные вычисления</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+
+<script type="application/javascript"   src="../../_js/list.js"></script>       <!-- работа со списками  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- функции рисования  -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Длительные вычисления</h1>
+
+Подготовим два шаблона, которые будут использоваться для длительных вычислениях
+или при тестировании быстродействия различных алгоритмов.
+
+<h2>1. Вычисления без подвисания страницы</h2>
+<p>
+Чтобы страница браузера не "подвисала", будем вызывать вычисления в таймере после нажатия кнопки <b class="norm">run</b>.
+Создадим объект, который делает следующее:
+</p>
+Начальное значение:
+<input type="text" id="par1" value="0"  style="width:5em; text-align:center;">
+Конечное значение:
+<input type="text" id="par2" value="1000000"  style="width:5em; text-align:center;">
+<input type="button" value="run" onClick="rn.run(this);">
+<b id="out">Нажми на кнопку</b>
+<p>
+Для этого вставим в html-страницу два поля редактирования, кнопку и тег жирного шрифта <b class="blue2">b</b>.
+У каждого объекта определим уникальное поле <b class="norm">id</b>:
+<pre class="brush: xml">
+Начальное значение:
+&lt;input type="text" id="par1" value="0"  style="width:3em; text-align:center;">
+Конечное значение:
+&lt;input type="text" id="par2" value="1000000"  style="width:3em; text-align:center;">
+&lt;input type="button" value="run" onClick="rn.run(this);">
+&lt;b id="out">Нажми на кнопку&lt;/b>
+</pre>
+Затем (как обычно в тегах <b class="blue2">script</b>) определим следующий класс и создадим его экземпляр - объект <b class="norm">rn</b>:
+<pre class="brush: js">
+var rn = new Runner('out', ['par1', 'par2']);     // id объекта вывода и массив входных параметров
+
+/****************************************************************************************
+* out - id вывода и pars - id параметров
+*/
+function Runner(out, pars)
+{
+   this.period = 100;                             // длительность вычислений в ms
+   this.wait   = 1;                               // пауза после цикла вычислений в ms
+
+   this.out  = document.getElementById(out);      // объект html-страницы для вывода
+   this.btn  = null;                              // кнопка запуска вычислений
+
+   if(pars){
+      this.pars  = new Array(pars.length);        // массив параметров (если они есть)
+      for(let i=0; i < pars.length; i++)
+         this.pars[i] = Number(document.getElementById(pars[i]).value);
+   }
+}
+/****************************************************************************************
+* Вызываем из кнопки для запуска или остановки
+*/
+Runner.prototype.run = function(btn)
+{
+   if(this.timerID === undefined){                // создаём таймер
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+/****************************************************************************************
+* Вызываем для остановки таймера
+*/
+Runner.prototype.stop = function()
+{
+   this.timerID = clearTimeout(this.timerID);     // убиваем  таймер
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+/****************************************************************************************
+* Таймер в котором происходят вычисления
+*/
+Runner.prototype.timer = function()
+{
+   let start = window.performance.now();
+   while(!this.finish() && window.performance.now() - start < this.period )
+      this.calc();                                // очередной цикл вычислений
+   this.info();                                   // выводим информацию о вычислениях
+
+   this.timerID = setTimeout(this.timer.bind(this), this.wait);
+
+   if(this.finish())                              // если вычисления закончились,
+      this.stop();                                // прекращаем их
+}
+/****************************************************************************************
+*  Инициализация вычислений
+*/
+Runner.prototype.init = function()
+{
+   this.state = this.pars[0];                     // задаём начальное состояние
+}
+/****************************************************************************************
+* Выводим информацию о вычислениях
+*/
+Runner.prototype.info = function()
+{
+   this.out.innerHTML = this.state;
+}
+/****************************************************************************************
+* Очередной цикл вычислений
+*/
+Runner.prototype.calc = function()
+{
+   this.state++;
+}
+/****************************************************************************************
+* Kогда прекращать вычисления
+*/
+Runner.prototype.finish = function()
+{
+   return this.state > this.pars[1]
+}
+</pre>
+</p>
+<script>
+var rn = new Runner('out', ['par1', 'par2']);     // id объекта вывода и массив входных параметров
+
+/****************************************************************************************
+* out - id вывода и pars - id параметров
+*/
+function Runner(out, pars)
+{
+   this.period = 100;                             // длительность вычислений в ms
+   this.wait   = 1;                               // пауза после цикла вычислений в ms
+
+   this.out  = document.getElementById(out);      // объект html-страницы для вывода
+   this.btn  = null;                              // кнопка запуска вычислений
+
+   if(pars){
+      this.pars  = new Array(pars.length);        // массив параметров (если они есть)
+      for(let i=0; i < pars.length; i++)
+         this.pars[i] = Number(document.getElementById(pars[i]).value);
+   }
+}
+/****************************************************************************************
+* Вызываем из кнопки для запуска или остановки
+*/
+Runner.prototype.run = function(btn)
+{
+   if(this.timerID === undefined){                // создаём таймер
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+/****************************************************************************************
+* Вызываем для остановки таймера
+*/
+Runner.prototype.stop = function()
+{
+   this.timerID = clearTimeout(this.timerID);     // убиваем  таймер
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+/****************************************************************************************
+* Таймер в котором происходят вычисления
+*/
+Runner.prototype.timer = function()
+{
+   let start = window.performance.now();
+   while(!this.finish() && window.performance.now() - start < this.period )
+      this.calc();                                // очередной цикл вычислений
+   this.info();                                   // выводим информацию о вычислениях
+
+   this.timerID = setTimeout(this.timer.bind(this), this.wait);
+
+   if(this.finish())                              // если вычисления закончились,
+      this.stop();                                // прекращаем их
+}
+/****************************************************************************************
+*  Инициализация вычислений
+*/
+Runner.prototype.init = function()
+{
+   this.state = this.pars[0];                     // задаём начальное состояние
+}
+/****************************************************************************************
+* Выводим информацию о вычислениях
+*/
+Runner.prototype.info = function()
+{
+   this.out.innerHTML = this.state;
+}
+/****************************************************************************************
+* Очередной цикл вычислений
+*/
+Runner.prototype.calc = function()
+{
+   this.state++;
+}
+/****************************************************************************************
+* Kогда прекращать вычисления
+*/
+Runner.prototype.finish = function()
+{
+   return this.state > this.pars[1]
+}
+</script>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Таймер</b></b>
+</div>
+Выше ключевой является функция <b class="norm">setTimeout</b>. Она  создаёт таймер, который один раз снова вызывает
+функцию <b class="norm">timer</b> через 100 ms (второй аргумент функции <b class="norm">setTimeout</b>).
+Номер таймера сохраняется в свойстве <b class="norm">timerID</b>. При удалении таймера функцией <b class="norm">clearTimeout</b>
+это свойство снова становится равным <b class="blue2">null</b>. Вся эта деятельность нужна, чтобы страница не подвисала
+при вычисления, перерисовывая себя в течении паузы <b class="norm">wait</b>.
+</p>
+<hr>
+<h2>2. Тестирование быстродействия </h2>
+<p>
+Для тестирования быстродействия, результаты различных тестов  удобно сохранять в табличном виде:
+<style>  table.right td { color: red;  font-family: "Consolas", monospace;}  </style>
+<center>
+<table class="right black" id="tblOUT">
+<tr>
+   <td><input type="button" value="run" style="width:5em;" onClick="spd.run(this);"> </td>
+                      <th>Данные1</th> <th>Данные2</th>
+</tr>
+<tr> <th>Метод1</th>  <td></td> <td></td> </tr>
+<tr> <th>Метод2</th>  <td></td> <td></td> </tr>
+</table>
+</center>
+<script>
+var spd = new Speed('tblOUT');
+
+function Speed(out)                               //*** out - id вывода и pars - id параметров
+{
+   this.out  = document.getElementById(out);      // объект html-страницы для вывода
+   this.btn  = null;                              // кнопка запуска вычислений
+}
+
+Speed.prototype.run = function(btn)               //*** вызываем из кнопки для запуска или остановки
+{
+   if(this.timerID === undefined){                // создаём таймер
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+
+Speed.prototype.stop = function()                 //*** вызываем для остановки таймера
+{
+   this.timerID = clearTimeout(this.timerID);     // убиваем  таймер
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+
+Speed.prototype.timer = function()                //*** таймер в котором происходят вычисления
+{
+   this.calc();                                   // очередной цикл вычислений
+   this.timerID = setTimeout(this.timer.bind(this), 100);
+   if(this.finish())                              // если вычисления закончились,
+      this.stop();                                // прекращаем их
+}
+
+Speed.prototype.init = function()
+{
+   let tbl =  this.out, num=0;
+   for(let r=1; r < tbl.rows.length; r++)         // очищаем таблицу
+      for(let c=1; c < tbl.rows[r].cells.length; c++){
+         tbl.rows[r].cells[c].innerText = "";
+         num++;
+      }
+
+   this.state = 0;                                // номер текущих вычислений
+   this.loop  = 0;                                // количество циклов
+   this.sumTime = new Array(num);
+   this.cntCalc = new Array(num);
+   for(let i = 0; i < num; i++)
+      this.sumTime[i] = this.cntCalc[i] = 0;
+}
+
+Speed.prototype.finish = function()
+{
+   return this.loop > 10;                         // останавливаемся поcле 10 циклов
+}
+
+Speed.prototype.calc = function()
+{
+   let tbl =  this.out, r, c, res;
+   let time = window.performance.now();
+   switch(this.state){                            // последовательно меняем одну из ячеек
+      case 0: res = Math.random();  r=1; c=1; break;
+      case 1: res = Math.random();  r=1; c=2; break
+      case 2: res = Math.random();  r=2; c=1; break
+      case 3: res = Math.random();  r=2; c=2; break
+   }
+   time = window.performance.now() - time;        // время вычислений
+   this.cntCalc[this.state]++;
+   this.sumTime[this.state] += time;              // вывод времени вычислений
+   tbl.rows[r].cells[c].innerText=(this.sumTime[this.state]/this.cntCalc[this.state]).toFixed(4);
+   this.state++;
+   if(this.state >= this.sumTime.length){
+      this.loop++;                                // прошли всю таблицу
+      this.state = 0;                             // начинаем по-новой
+   }
+}
+</script>
+</p>
+<p>
+Для организации подобного табличного "вычислителя" добавим в документ таблицу:
+<pre class="brush: xml">
+&lt;style>  table.right td { color: red;  font-family: "Consolas", monospace;}  &lt;/style>
+&lt;center>
+&lt;table class="right black" id="tblOUT">
+&lt;tr>
+   &lt;td> <input type="button" value="run" style="width:5em;" onClick="spd.run(this);"> &lt;/td>
+                          &lt;th> Данные1 &lt;/th> &lt;th> Данные2 &lt;/th>
+&lt;/tr>
+&lt;tr> &lt;th>Метод1&lt;/th>  &lt;td>&lt;/td> &lt;td>&lt;/td> &lt;/tr>
+&lt;tr> &lt;th>Метод2&lt;/th>  &lt;td>&lt;/td> &lt;td>&lt;/td> &lt;/tr>
+&lt;/table>
+&lt;/center>
+</pre>
+Затем вставим скрипт:
+<pre class="brush: js">
+var spd = new Speed('tblOUT');
+
+function Speed(out)                               //*** out - id вывода и pars - id параметров
+{
+   this.wait   = 100;                             // пауза после цикла вычислений в ms
+
+   this.out  = document.getElementById(out);      // объект html-страницы для вывода
+   this.btn  = null;                              // кнопка запуска вычислений
+}
+
+Speed.prototype.run = function(btn)               //*** вызываем из кнопки для запуска или остановки
+{
+   if(this.timerID === undefined){                // создаём таймер
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+
+Speed.prototype.stop = function()                 //*** вызываем для остановки таймера
+{
+   this.timerID = clearTimeout(this.timerID);     // убиваем  таймер
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+
+Speed.prototype.timer = function()                //*** таймер в котором происходят вычисления
+{
+   this.calc();                                   // очередной цикл вычислений
+   this.timerID = setTimeout(this.timer.bind(this), this.wait);
+   if(this.finish())                              // если вычисления закончились,
+      this.stop();                                // прекращаем их
+}
+
+Speed.prototype.init = function()
+{
+   let tbl =  this.out, num=0;
+   for(let r=1; r < tbl.rows.length; r++)         // очищаем таблицу
+      for(let c=1; c < tbl.rows[r].cells.length; c++){
+         tbl.rows[r].cells[c].innerText = "";
+         num++;
+      }
+
+   this.state = 0;                                // номер текущих вычислений
+   this.loop  = 0;                                // количество циклов
+   this.sumTime = new Array(num);
+   this.cntCalc = new Array(num);
+   for(let i = 0; i < num; i++)
+      this.sumTime[i] = this.cntCalc[i] = 0;
+}
+
+Speed.prototype.finish = function()
+{
+   return this.loop > 10;                         // останавливаемся поcле 10 циклов
+}
+
+Speed.prototype.calc = function()
+{
+   let tbl =  this.out, r, c, res;
+   let time = window.performance.now();
+   switch(this.state){                            // последовательно меняем одну из ячеек
+      case 0: res = Math.random();  r=1; c=1; break;
+      case 1: res = Math.random();  r=1; c=2; break
+      case 2: res = Math.random();  r=2; c=1; break
+      case 3: res = Math.random();  r=2; c=2; break
+   }
+   time = window.performance.now() - time;        // время вычислений
+   this.cntCalc[this.state]++;
+   this.sumTime[this.state] += time;              // вывод времени вычислений
+   tbl.rows[r].cells[c].innerText=(this.sumTime[this.state]/this.cntCalc[this.state]).toFixed(4);
+   this.state++;
+   if(this.state >= this.sumTime.length){
+      this.loop++;                                // прошли всю таблицу
+      this.state = 0;                             // начинаем по-новой
+   }
+}
+</pre>
+</p>
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("", "",   "", ""); </script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL);</script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/LongCalc.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:15 GMT -->
+</html>

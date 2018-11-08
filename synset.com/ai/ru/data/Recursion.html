@@ -1,0 +1,1086 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Recursion.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:05 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Рекурсия</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- рисование  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- деревья -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Рекурсия</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#rec3r">Вычисление факториала</a></li>
+   <li><a href="#recF">Задача про 8 ферзей</a></li>
+   <li><a href="#recF2">Расстановка ферзей</a></li>
+   <li><a href="#rec3a">Разделяй и властвуй</a></li>
+ </ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+      <li><a href="#rec4">Числа Фибоначчи</a></li>
+      <li><a href="#rec5">Динамическое программирование</a></li>
+      <li><a href="#rec6">Упаковка рюкзака</a></li>
+      <li><a href="#rec5a">Рекурсия без рекурсии <sup>*</sup></a></li>
+</ul>
+</div>
+</div>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec3r"></a>
+<h2>Вычисление факториала</h2>
+
+<p>
+Факториал определяется рекуррентным соотношением <b class="norm">n! = n &middot; (n-1)!</b>.
+В предыдущем <a href="AI_JavaScript.html">документе</a> он был вычислен в цикле.
+Этот же результат можно получить при помощи следующей функции:
+<pre class="brush: js">
+function fac(n)
+{
+   if(n < 2) return 1;                            // для fac(1) вернём 1 (и вообще при n < 2)
+   return n*fac(n-1);                             // рекурсия n! = n * (n-1)!
+}
+
+document.write("5!=", fac(5));                    // выводим значение функции на html страницу
+</pre>
+Запуск скрипта даёт:
+<b class="green">
+<script>
+function fac(n)
+{
+   if(n < 2) return 1;                            // для fac(1) вернём 1 (и вообще при n < 2)
+   return n*fac(n-1);                             // рекурсия n! = n * (n-1)!
+}
+
+document.write("5!=", fac(5));                    // выводим значение функции на html страницу
+</script></b>.
+Выше  функция <b class="norm">fac</b> вызывает сама себя с аргументом на <b class="norm">1</b> меньше.
+Это простейший пример <i>рекурсии</i>.
+При выполнении программы происходит цепочка вычислений <b class="norm">fac(5) = 5*fac(4) = 5*( 4*fac(3) ) </b> и т.д.,
+пока вызовы не доберутся до <b class="norm">fac(1)</b> и не сработает первая строка функции.
+</p>
+<p>
+При каждом рекурсивном вызове в памяти сохраняются все <i>локальные</i> переменные, объявленные внутри функции (в <b class="norm">fac</b> это только аргумент <b class="norm">n</b>).
+После захода в вызываемую функцию и её "отработки" эти переменные восстанавливаются и ход вычислений продолжается
+с того  места, где был прерван.
+При этом локальные переменные в рекурсивно вызываемой функции находятся в отдельной памяти, отличной от памяти функции которая её вызвала.
+</p>
+<p>
+В JavaScript при вызове функции можно опускать часть её аргументов. К примеру (довольно глупому), если по умолчанию <b class="norm">fac()</b> должно означать <b class="norm">fac(5)</b>,
+можно написать:
+<pre class="brush: js">
+function fac(n)
+{
+   if(n === undefined) n=5;                       // значение аргумента по умолчанию
+
+   if(n < 2) return 1;
+   return n*fac(n-1);
+}
+</pre>
+<script>
+function fac(n)
+{
+   if(n === undefined) n=5;                       // значение аргумента по умолчанию
+
+   if(n < 2) return 1;
+   return n*fac(n-1);
+}
+//document.write("fac()=5!=", fac());
+</script>
+Тройное равенство в <b class="blue2">if</b> означает,
+что переменная <b class="norm">n</b> сравнивается с зарезервированным словом <b class="norm">undefined</b> (не определено)
+<i>без преобразования типов</i>.
+В данном случае можно было бы использовать и двойное равенство.
+Однако, тройное - чуть быстрее, т.к. не приводит стоящие в нём сущности к одному типу.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="recF"></a>
+<h2>Задача про 8 ферзей</h2>
+
+<p>
+Применим рекурсию к более интересной задаче:
+<blockquote>
+На шахматной доске <b class="norm">8x8</b> необходимо расставить 8 ферзей так, чтобы ни один из них
+не оказался под ударом (ферзь ходит по прямым линиями: горизонтальным, вертикальным и диагональным).
+</blockquote>
+Понятно, что если на вертикальной линии (колонке) уже находится ферзь, на неё другого ферзя ставить нельзя.
+Поэтому зададим положение ферзей при помощи одномерного массива <b class="norm">queens</b>
+размером <b class="norm">size=8</b>.
+Каждый  элемент <b class="norm">queens[c]==r</b> этого массива равен высоте (номеру строки <b class="norm">r</b>)
+ферзя в колонке под номером "<b class="norm">c</b>":
+<pre class="brush: js">
+var size = 8;                                     // размер доски
+var queens = Array(size);                         // положение ферзей
+for(var c=0; c < size; c++)                       // бежим по колонкам
+   queens[c] = 0;                                 // всех ставим на первую строку (это не решение)
+</pre>
+В одной строке два ферзя  находится не могут, поэтому элементы массива,
+в решении задачи различны. Возможным решением будет  перестановка
+чисел <b class="norm">(0,1,2,3,4,5,6,7)</b>, однако большинство таких перестановок
+(а их <b class="norm">8!=<script>document.write(fac(8))</script></b>)
+приводят к ферзям на одной диагонали.
+</p>
+<p>
+Напишем функцию, которая рисует шахматную доску при
+помощи  стилей. В html есть символы шахматных
+фигур, например, ферзь <b class="norm" style="font-size: 18px;">&#9819;</b> - это:
+<b class="norm">&amp;#9819;</b> (16-битный  unicode символа).
+В тегах <b class="blue2">style</b> определим 4 класса стиля
+для шахматной доски (<b class="norm">board</b>), "бесцветной" клеточки (<b class="norm">cell</b>),
+а также белой (<b class="norm">white</b>) и чёрной (<b class="norm">black</b>) клеток:
+<pre class="brush: xml">
+<style>
+   .board { border:2px solid black; margin:4px; display:inline-block; }
+   .cell  { border:1px solid black; width:20px; height:20px; font-size: 20px; display:inline-block; }
+   .white { background-color:white; color:black;}
+   .black { background-color:#555;  color:white;}
+</style>
+</pre>
+Имя класса стиля начинается с точки и в фигурных скобках
+задаются его параметры. Доску мы окружаем толстым
+(<b class="norm">2</b> пикселя)
+чёрным бордюром (<b class="norm">border</b>), вокруг которого делаем отступ в <b class="norm">4</b> пикселя (<b class="norm">margin</b>).
+Стили будут применяться к универсальному блоку html-страницы <b class="blue2">div</b>.
+Последовательно идущие блоки <b class="blue2">div</b> каждый раз начинаются с новой строки.
+Чтобы это пресечь (для вывода нескольких решений в одной строке) служит последний параметр класса <b class="norm">board</b>.
+Аналогично, задаётся бордюр, ширина (<b class="norm">width</b>), высота (<b class="norm">height</b>) и размер шрифта
+(<b class="norm">font-size</b>) для ячейки шахматной доски. Кроме этого, в классах
+<b class="norm">white</b> и <b class="norm">black</b>, определены белые и чёрные (серые) ячейки, в которых для
+контраста меняется не только цвет фона (<b class="norm">background-color</b>), но и цвет шрифта (<b class="norm">color</b>).
+</p>
+<p>
+Теперь можно написать функцию печати доски:
+<style>
+   .board { border:2px solid black; margin:4px; display:inline-block; }
+   .cell  { border:1px solid black; width:20px; height:20px; font-size: 20px; display:inline-block; }
+   .white { background-color:white; color:black;}
+   .black { background-color:#555;  color:white;}
+</style>
+<script>
+var size = 8;                                     // размер доски
+var queens = Array(size);                         // положение ферзей
+for(var c=0; c < size; c++) queens[c] = 0;        // все на первой строке (это не решение)
+
+function Show(n)
+{
+   document.write('<div class="board">');
+   for(var r=0; r < size; r++){
+      for(var c=0; c < size; c++){
+         var ch  = queens[c]===r && c <= n? "&#9819;": " ";
+         var knd = 'class="cell ' + ( (r+c) % 2 ? 'black"': 'white"');
+         document.write('<div ', knd, '>', ch, '</div>');
+      }
+      document.write('<br>');
+   }
+   document.write('</div>');
+}
+</script>
+</p>
+
+<p>
+<div style = "overfloat:hidden; margin-top:-1em; width:100%">
+<div style = "float:left;  width:770px;">
+<pre class="brush: js">
+function Show()
+{
+   document.write('<div class="board">');         // открываем тег div
+   for(var r=0; r < size; r++){                   // по строкам
+      for(var c=0; c < size; c++){                // по колонкам
+         var ch  = queens[c]===r ? "&amp;#9819;" : " ";
+         var knd = 'class="cell ' + ( (r+c) % 2 ? 'black"': 'white"');
+         document.write('&lt;div ', knd, '&gt;', ch, '&lt;/div>');
+      }
+      document.write('<br>');                     // переход на новую строку
+   }
+   document.write('</div>');                      // закрываем тег div
+}
+</pre>
+</div>
+<div style = "float:right; width:200px;">
+<pre>
+<script>
+Show(size);
+</script>
+</pre>
+</div>
+</div>
+<div style="clear:left"></div>
+Первая и последняя строка функции окружают ячейки доски тегом <b class="blue2">div</b>,
+которому устанавливается класс <b class="norm">board</b>. Затем в цикле по <b class="norm">r</b>
+сверху-вниз перебираются строки.
+Для каждой из них просматриваются колонки (цикл по <b class="norm">c</b>)
+и, если значение массива <b class="norm">queens[c]</b> совпадает с номером строки <b class="norm">r</b>,
+выводится ферзь, иначе - пробел (переменная <b class="norm">ch</b>).
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Остаток от деления: <b class="norm">x % 2</b>
+</div>
+Затем выясняется чётность суммы <b class="norm">r+c</b> (остаток от деления на два
+равен <b class="norm">0</b> для <b class="norm">0,2,4,...</b>
+и <b class="norm">1</b> для <b class="norm">1,3,5,...</b>). При чётной сумме выбирается класс стиля
+<b class="norm">class="cell white"</b>, а для нечётной: <b class="norm">class="cell black"</b>
+(комбинация двух классов в стиле объединяет их параметры).
+</p>
+<p>
+Вывод доски в html-страницу, вообще говоря, лучше окружить тегами <b class="norm">pre</b>:
+<b class="norm">
+&lt;<b class="blue2">pre</b>&gt;&lt;<b class="blue2">script</b>&gt;Show()&lt;<b class="blue2">/script</b>&gt;&lt;<b class="blue2">/pre</b>&gt;,
+</b>
+чтобы ячейки не "разлазились".
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="recF2"></a>
+<h2>Расстановка ферзей</h2>
+
+
+<p>
+В рекурсивных алгоритмах типичным рассуждением является следующее: пусть часть  задачи (возможно большая)
+уже решена (не важно как); используя этот факт,  сделаем небольшой шаг в направлении окончательного решения.
+</p>
+<p>
+В нашей задаче, соответственно, предположим, что <b class="norm">n</b> ферзей (<b class="norm">n &lt; 8</b>)
+уже расставлены правильно и не угрожают друг другу.
+Добавим к ним ещё одного ферзя.
+Для этого необходимо задать элемент массива <b class="norm">queens[n]</b> (нумерация с нуля),
+т.е. определить высоту (номер строки) нового ферзя.
+Будем опускаться сверху вниз по строкам и для каждой из них
+проверять, не находится ли там ранее поставленный ферзь
+(первые <b class="norm">n</b> элементов массива <b class="norm">queens</b>).
+Кроме этого, необходимо проверить, что новый ферзь не оказался на одной диагонале со старыми.
+Пусть два ферзя имеют координаты (строка, столбец) равные
+<b class="norm">(r1,c1)</b> и <b class="norm">(r2,c2)</b>.
+Они стоят на одной диагонали, если <b class="norm">|r1-r2|===|c1-c2|</b> (проверьте).
+</p>
+<p>
+Код функции <b class="norm">Solve</b>, находящей все решения, имеет вид:
+<pre class="brush: js">
+var nSolutions = 0;                               // число найденных решений
+
+function Solve(n)
+{
+   if(n===undefined) n = 0;                       // вначале ферзей нет
+
+   if(n >= size){                                 // всех расставили
+      if(nSolutions++ < 5)                        // подсчитываем число решений
+         Show();                                  // и выводим первые 5
+      return;                                     // перебор окончен
+   }
+
+   for(var r=0, c; r < size; r++){                // бежим по строчкам сверху-вниз
+
+      for(c=0; c < n; c++)                        // перебираем уже поставленных ферзей
+         if(   queens[c] === r                    // если они стоят на этой строке
+            || Math.abs(queens[c]-r) === n-c )    // или находятся с новым на одной диагонали
+            break;                                // вариант не подходит - выходим из цикла
+
+      if(c === n){                                // ни кто не бьет ферзя на r-той высоте
+         queens[n] = r;                           // ставим его туда
+         Solve(n+1);                              // и подбираем следующего - рекурсия!
+      }
+   }
+}
+
+Solve();                                          // запускаем функцию с 0 ферзями:
+</pre>
+</p>
+<center>
+<pre>
+<script>
+var nSolutions = 0;                               // число найденных решений
+var count = 0;
+
+function Solve(n)
+{
+   if(n===undefined) n = 0;                       // вначале ферзей нет
+
+   if(n >= size){                                 // всех расставили
+      if(nSolutions++ < 5)                       // подсчитываем число решений
+         Show(n);                                  // выводим 5 первых решений
+      return;                                     // перебор окончен
+   }
+   count++;
+   for(var r=0, c; r < size; r++){                // бежим по строчкам сверху-вниз
+
+      for(c=0; c < n; c++)                        // перебираем уже поставленных ферзей
+         if(   queens[c] === r                    // если они стоят на этой строке
+            || Math.abs(queens[c]-r) === n-c )    // или находятся с k yf одной диагонали
+            break;                                // вариант не подходит - выходим из цикла
+
+      if(c === n){                                // ни кто не бьет ферзя на k-той высоте
+         queens[n] = r;                           // ставим его
+         Solve(n+1);                              // и подбираем следующего - рекурсия!
+      }
+   }
+}
+
+Solve();                                          // запускаем функцию с 0 ферзями
+</script>
+</pre>
+</center>
+Всего функция <b class="norm">Solve</b> нашла <b class="norm"><script>document.write(nSolutions);</script></b>
+решения, первые 5 из которых приведены выше. Полный перебор потребовал
+<script>document.write(count)</script> рекурсивных вызовов функции.
+Ниже приведена последовательность первых расстановок ферзей,
+которые <i>не</i> привели к решению, хотя в начале всё получалось (проверьте, что на  очередную
+пустую колонку на пятой картинке ферзя поставить нельзя):
+<center>
+<pre>
+<script>
+nSolutions = 0;                               // число найденных решений
+var num = 0;
+
+function Solve2(n)
+{
+   if(n >= size){                                 // всех расставили
+      ++nSolutions;                       // подсчитываем число решений
+      return;                                     // перебор окончен
+   }
+
+   for(var r=0, c; r < size; r++){                // бежим по строчкам сверху-вниз
+
+      for(c=0; c < n; c++)                        // перебираем уже поставленных ферзей
+         if(   queens[c] === r                    // если они стоят на этой строке
+            || Math.abs(queens[c]-r) === n-c )    // или находятся с k yf одной диагонали
+            break;                                // вариант не подходит - выходим из цикла
+
+      if(c === n){                                // ни кто не бьет ферзя на k-той высоте
+         queens[n] = r;                           // ставим его
+         if(num++ < 5){
+            Show(n);
+         }
+
+         Solve2(n+1);                              // и подбираем следующего - рекурсия!
+      }
+   }
+}
+Solve2(0);                                          // запускаем функцию с 0 ферзями
+</script>
+</pre>
+</center>
+Алгоритму пришлось вернуться последнему шагу и опустить ферзя на нижнюю линию (с <b class="norm">e5</b>
+на <b class="norm">e1</b>). Впрочем и это не помогает. Поэтому необходимо возвращаться ещё и ещё назад,
+пока второй ферзь не окажется на позиции <b class="norm">b4</b> (т.е. <b class="norm">queens[1]=4</b>), что в конечном счёте приведёт к первому решению.
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec3a"></a>
+<h2>Разделяй и властвуй</h2>
+
+<p>
+При создании алгоритмов, часто используется приём, когда данные разбиваются на несколько частей (желательно равных)
+и алгоритм  снова применяется  к каждой из частей рекурсивным образом.
+Это можно сформулировать как: "<i>разбей на подзадачи и реши их</i>" или "<i>разделяй и властвуй</i>".
+Проиллюстрируем этот подход на примере задачи о  "быстрой сортировки" массива.
+</p>
+<p>
+Будем передавать в функцию <b class="norm">qsort</b> массив <b class="norm">ar</b>
+и диапазон индексов <b class="norm">lf,...,rt</b> между которыми  элементы массива необходимо отсортировать по возрастанию (при первом вызове <b class="norm">lf=0</b>,
+а <b class="norm">rt=ar.length-1</b>, где <b class="norm">ar.length</b> - число элементов в массиве).
+Алгоритм состоит в следующем.
+Выберем некоторый элемент массива, который назовём "<i>опорным</i>" (ниже он расположен в середине массива).
+Затем будем переставлять элементы массива вокруг опорного так, чтобы  слева от него оказалось множество элементов меньших, чем все элементы справа от них.
+Когда это произойдёт,  применим рекурсивно алгоритм к левому и правому <i>непересекающимся</i> подмножествам элементов.
+Для случайных элементов, в среднем этот алгоритм требует <b class="norm">n&middot;log<sub>2</sub>(n)</b> итераций по массиву:
+<pre class="brush: js">
+function qsort(ar, lf, rt)
+{
+   if(lf === undefined) lf=0;                     // по умолчанию весь массив
+   if(rt === undefined) rt=ar.length-1;
+
+   var v = ar[(lf+rt) >> 1];                      // опорный - средний элемент
+   var i = lf, j = rt;
+   while(i <= j){                                 // пока i не превысило j
+
+      while( ar[i] < v ) i++;                     // идём к v слева,  пока элементы меньше v
+      while( v < ar[j] ) j--;                     // идём к v справа, пока элементы больше v
+
+      if (i <= j){                                // нашлись "неправильные" элементы ar[i], ar[j]
+         var  ai = ar[i]; ar[i]=ar[j]; ar[j]=ai;  // переставляем их местами (делаем "правильными")
+         i++; j--;                                // продолжаем поиск "неправильных"
+      }
+   }
+
+   if(lf < j) qsort(ar, lf,  j);                  // сортируем множество меньших значений
+   if(i < rt) qsort(ar, i,  rt);                  // сортируем множество больших значений
+}
+</pre>
+</p>
+<p>
+<div class="LearnJS" style="width:15em"><b class="title">JavaScript</b><br>
+<b class="norm">n >> 1 === Math.floor(n/2)</b>
+</div>
+Обратим внимание на способ получения среднего индекса: <b class="norm">(lf+rt) >> 1</b>.
+Логический сдвиг целого числа на один бит вправо эквивалентен целочисленному делению.
+Запись <b class="norm">(lf+rt)/2</b> была бы не верной, т.к. при нечётной сумме
+получилось бы не целое число (JavaScript работает с вещественными числами!).
+Можно было бы отбросить дробную часть: <b class="norm">Math.floor((lf+rt)/2)</b>,
+но приведенный способ целочисленного деления на <b class="norm">2</b> - быстрее и короче.
+</p>
+<p>
+<div class="LearnJS" style="width:15em"><b class="title">JavaScript</b><br>
+<b class="norm">x | 0 === Math.floor(x)</b>
+</div>
+Отметим ещё один трюк, связанный с числами.
+Пусть у числа <b class="norm">x = 7.5</b>  необходимо
+отбросить дробную часть. Можно написать: <b class="norm">x = x | 0</b>, что даст
+<b class="norm"><script>var x=7.5; x = x | 0; document.write(x)</script></b>.
+Вертикальная черта означает целочисленную операцию "логического или".
+Видя её, браузер отбрасывает у <b class="norm">x</b> дробную часть и получившееся целое
+число логически "складывает" с нулём (целый <b class="norm">x</b> от этого не поменяется).
+</p>
+<p>
+Протестируем функцию сортировки:
+<div style="overflow:hidden; width:100%; margin-top:-1em;">
+<div style="float:left; width:550px; margin-top:0em;">
+<pre class="brush: js">
+var ar = [19, 1, 13, 7, 23, 3, 11, 17, 5, 2];
+document.write(ar, '<br><br>');
+qsort(ar);
+document.write(ar);
+</pre>
+Справа между первой строчкой (исходный массив) и последней  (отсортированный) приведены вызовы функции (каждый отступ вправо соответствует
+более "глубокой" рекурсии).  Синим цветом отмечены элементы <b class="norm">ar[lf]</b> и <b class="norm">ar[rt]</b>,
+а красным - опорный элемент  <b class="norm">v</b>. Обратим внимание, что опорный элемент также участвует
+в перестановках, поэтому не всегда получается разделять данные на равные части.
+</div>
+<div style="float:right; margin-top:0em;">
+<pre class="outJS" >
+<script>
+function qsort(ar, lf, rt, out)
+{
+   if(lf === undefined) lf=0;                     // по умолчанию весь массив
+   if(rt === undefined) rt=ar.length-1;
+
+   if(out){
+      document.write(" ".repeat(3*out));
+      for(var i=0; i < ar.length; i++){
+         var st = ar[i];
+         if(i === lf || i === rt) st = '<b class="blue">'+ar[i]+'</b>';
+         if(i === (lf+rt)>>1)     st = '<b class="red">'+ar[i]+'</b>';
+         document.write( st, (i+1 < ar.length)? ',':"");
+      }
+      document.write('<br>');
+   }
+
+   var v = ar[(lf+rt) >> 1];                      // опорный - средний элемент
+   var i = lf, j = rt;
+   while(i <= j){
+
+      while( ar[i] < v ) i++;                     // идём к v слева,  пока элементы меньше v
+      while( v < ar[j] ) j--;                     // идём к v справа, пока элементы больше v
+
+      if (i <= j){                                // нашлись "неправильные" элементы ar[i], ar[j]
+         var  ai = ar[i]; ar[i]=ar[j]; ar[j]=ai;  // переставляем их местами (делаем "правильными")
+         i++; j--;                                // продолжаем поиск "неправильных"
+      }
+   }
+
+   if(lf < j) qsort(ar, lf,  j , out+1);          // сортируем множество меньших значений
+   if(i < rt) qsort(ar, i,  rt , out+1);          // сортируем множество больших значений
+}
+
+var ar = [19, 1, 13, 7, 23, 3, 11, 17, 5, 2];
+document.write(ar, '<br><br>');
+qsort(ar, 0, ar.length-1, 1);
+document.write('<br>',ar);
+</script>
+</div>
+</div>
+Чтобы множества элементов не пересекались, в <b class="blue2">while</b> и <b class="blue2">if</b> стоит проверка <b class="norm">i &lt= j</b>.
+Благодаря ей, рано или поздно, <b class="norm">j</b> станет на единицу меньше <b class="norm">i</b>.
+В результате, <b class="norm">j</b> окажется верхним индексом левого подмножества,
+а <b class="norm">i</b> - нижним правого
+(см. рекурсивные вызовы <b class="norm">qsort</b>). В  <b class="blue2">if</b><b class="norm">(i <= j)</b>  это иногда приводит
+к ненужной перестановке при <b class="norm">i===j</b>.
+Но это бывает редко, поэтому разбивать <b class="blue2">if</b> на две части (<b class="norm">i &lt j</b> для первой строки и <b class="norm">i &lt;= j</b>
+для второй) смысла не имеет.
+Функцию <b class="norm">qsort</b> можно чуть ускорить, если убрать <b class="blue2">if</b>-ы  в её начале
+(проверка на <b class="blue2">undefined</b> аргументов).
+Для этого необходимо ввести две функции
+<b class="norm">qsort(ar)</b> и <b class="norm">qsortLfRt(ar, lf, rt)</b>
+и вторую функцию вызвать из первой.
+</p>
+<p>
+В JavaScript существует встроенная функция <b class="norm">sort</b>, сортирующая массивы.
+Однако, она преобразует элементы массива к строкам, поэтому при сортировке
+чисел получается не совсем ожидаемый результат. Для устранения этого, необходимо при вызове <b class="norm">sort</b>
+передать ей в качестве аргумента функцию, которая возвращает <b class="norm">-1</b>, если элементы меньше друг друга и <b class="norm">1</b>, если больше (а при равенстве вернуть <b class="norm">0</b>).
+Эту функцию можно объявить как обычно, а затем передать её имя (только имя без скобок!),
+а можно создать безымянную функцию "налету":
+<div style="overflow:hidden; width:100%; margin-top:0em;">
+<div style="float:left; width:700px; margin-top:0em;">
+<pre class="brush: js">
+var ar = [19, 1, 13, 7, 23, 3, 11, 17, 5, 2];
+document.write(ar, '<br><br>');
+ar.sort();
+document.write(ar, '<br><br>');
+ar.sort( function(a, b) { return a < b? -1: (a > b? 1:0); } );
+document.write(ar);
+</pre>
+</div>
+<div style="float:right; margin-top:0em;">
+<pre class="outJS" style="width:15em">
+<script>
+var ar = [19, 1, 13, 7, 23, 3, 11, 17, 5, 2];
+document.write(ar, '<br><br>');
+ar.sort();
+document.write(ar, '<br><br>');
+ar.sort( function(a, b) { return a < b? -1: (a > b? 1:0); } );
+document.write(ar);
+</script>
+</div>
+</div>
+</p>
+
+<!---
+<pre class="outJS">
+<script>
+function rnd(n){ return Math.floor(Math.random()*n); }
+for(var it=0; it < 10000; it++){
+   var len = 1+rnd(10);
+   var ar0 = new Array(len), ar1 = new Array(len), ar2 = new Array(len);
+   for(var i=0; i < len; i++){
+      var a = rnd(5);
+      ar0[i] = ar1[i] = ar2[i] = a;
+   }
+   qsort(ar1);
+   ar2.sort( function(a, b) { return a < b? -1: (a > b? 1:0); }  );
+   if(ar1.toString() !== ar2.toString())
+      document.write(ar0,'   ', ar1, '    ', ar2, '<br>');
+}
+</script>
+</pre>
+--->
+<p>
+<a id="Learn_if_s"></a>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">с ? r1: r2</b>
+</div>
+В безымянной функции использована конструкция <b class="norm">(условие ? res_true: res_false)</b>,
+которая имеет значение <b class="norm">res_true</b>, если <b class="norm">условие</b> истинно
+и <b class="norm">res_false</b> - в противном случае.
+Выше эта конструкция использована дважды. Второй раз <b class="norm">(a &lt; b? 1:0)</b> -
+равно <b class="norm">1</b>, если <b class="norm">a &lt; b</b>
+и <b class="norm">0</b> - иначе.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec4"></a>
+<h2>Числа Фибоначчи</h2>
+
+<p>
+Числа Фибоначчи определяются рекуррентным соотношением <b class="norm">F<sub>n</sub>=F<sub>n-1</sub>+F<sub>n-2</sub></b>,
+с начальными значениями <b class="norm">F<sub>0</sub>=0</b> и <b class="norm">F<sub>1</sub>=1</b>.
+Несложно ими заполнить <i>массив</i>:
+<pre class="brush: js">
+var f = new Array(51);                           // объявляем массив из 51 элемента
+f[0]=0; f[1]=1;                                  // задаём начальные значения
+
+for(var i=2; i < f.length; i++){                 // цикл по всем элементам массива, начиная с f[2]
+   f[i] = f[i-1] + f[i-2];                       // применяем рекуррентную формулу
+   document.write(' f<sub>',i,'</sub>=<b>', f[i],'</b>, ');
+}
+</pre>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Цикл <b class="blue2">for</b></b>
+</div>
+Цикл <b class="blue2">for</b> аналогичен циклу в других языках программирования:<br>
+<pre>
+  <b class="blue2">for</b><b class="norm">(действие_перед_началом; проверка_перед_итерацией; действие_после_итерации){ итерация }</b>
+</pre>
+В функции, сначала происходит задание начального значения индекса (<b class="norm">i=2</b>), затем указывается условие, которое должно быть истинным (<b class="blue2">true</b>),
+чтобы итерация цикла сработала (<b class="norm">i</b> меньше длины массива). Наконец, третья (после точки с запятой) команда выполняется <i>после</i> очередной итерации
+(в нашем случае это <b class="norm">i++</b>, т.е. увеличение  индекса на единицу: <b class="norm">i=i+1</b>).
+</p>
+<p>
+Вставка этого скрипта в html-документ (внутри тегов <b class="blue2">script</b>) приводит к:<br><br>
+<div class="outJS">
+<script>
+var f = new Array(51);                           // объявляем массив из 51 элемента
+f[0]=0; f[1]=1;                                  // задаём начальные значения
+
+for(var i=2; i < f.length; i++){                 // цикл по всем элементам массива, начиная с f[2]
+   f[i] = f[i-1] + f[i-2];                       // применяем рекуррентную формулу
+   document.write(' f<sub>',i,'</sub>=<b>', f[i],'</b>, ');
+}
+</script>
+</div>
+</p>
+<p>
+Чтобы выяснить некоторые проблемы, связанные с рекурсией,
+вычислим числа Фибоначчи также при помощи следующей функции:
+<pre class="brush: js">
+function Fib1(n)
+{
+   if(n  <  1) return 0;                          // F0 = 0 - обрыв рекурсии
+   if(n === 1) return 1;                          // сравниваем без преобразования типа (так быстрее!)
+
+   return Fib1(n-1)+Fib1(n-2);                    // два рекурсивных вызова
+}
+</pre>
+В частности <b class="norm">document.write(Fib1(8))</b> даст
+<b class="green">
+<script>
+var count = 0;
+function Fib1(n)
+{
+   count++;
+   if(n  <  1) return 0;                          // F0 = 0 - обрыв рекурсии
+   if(n === 1) return 1;                          // сравниваем без преобразования типа (так быстрее!)
+
+   return Fib1(n-1)+Fib1(n-2);                    // два рекурсивных вызова
+}
+document.write(Fib1(8));
+</script></b>.
+Впрочем, это крайне неэффективный способ.
+Дело в том, что в <b class="norm">Fib1(n)</b> приходится по несколько раз вызывать функцию с одним и тем же аргументом:
+<pre>
+    F<sub>5</sub> = F<sub>4</sub> + F<sub>3</sub> = (F<sub>3</sub>+F<sub>2</sub>) + (F<sub>2</sub>+F<sub>1</sub>) = ( (F<sub><b class="underline">2</b></sub>+F<sub>1</sub>) + F<sub><b class="underline">2</b></sub> ) + (F<sub><b class="underline">2</b></sub>+F<sub>1</sub>) = ...
+</pre>
+Это приводит к очень "ветвистым" деревьям рекурсивных вызовов с повторяющимися
+кустами веток (ниже построены вызовы <b class="norm">Fib1(3), Fib1(5), Fib1(7)</b>
+и в узлах деревьев приведено значение аргумента <b class="norm">n</b>):<br><br>
+<script>
+function FibTree(n, tr)
+{
+   tr.nm = n;
+   if(n  <  1) { return 0; }
+   if(n === 1) { return 1; }
+   tr.ar = [ {}, {} ];
+   return FibTree(n-1, tr.ar[0])+FibTree(n-2, tr.ar[1]);
+}
+Tree.svg.colors = ['#ffc', '#960', '#069']
+var tree = {};
+FibTree(3, tree)
+Tree.setNm(tree,'chk',1, 3);
+document.write(Tree.getSVG(tree));
+FibTree(5, tree)
+Tree.setNm(tree,'chk',1, 5);
+document.write(Tree.getSVG(tree));
+FibTree(7, tree)
+Tree.setNm(tree,'chk',1, 7);
+Tree.setNm(tree,'chk',2, 5);
+document.write(Tree.getSVG(tree));
+</script>
+</p>
+<p>
+Для <b class="norm">Fib1(7)</b> значение <b class="norm">Fib1(5)</b> вычисляется два раза (выше синие узлы) и каждый такой
+вызов требует множества повторных вычислений.
+С ростом <b class="norm">n</b> число ветвей дерева стремительно растёт.
+Пусть количество вызовов равно <b class="norm">N<sub>n</sub></b>. Каждый вызов функции дополнительно порождает
+<b class="norm">N<sub>n-1</sub></b> и <b class="norm">N<sub>n-2</sub></b> вызовов и <b class="norm">N<sub>0</sub>=N<sub>1</sub>=1</b>. Поэтому:
+<center style="margin-top:-0.5em">
+<b class="norm">N<sub>n</sub> = 1 + N<sub>n-1</sub> + N<sub>n-2</sub></b>.
+</center>
+Приведём некоторые значения чисел Фибоначчи и числа вызовов функции <b class="norm">Fib1</b>:<br><br>
+<style>
+table tr th,
+table tr td                { text-align: right; width:4em; font-family: monospace;}
+table tr th:nth-child(1),
+table tr td:nth-child(1)   { text-align: left; width:1em;}
+</style>
+<table class="center border">
+<tr> <th style="width:5em"><b class="black">n</b></th>          <th>2</th>   <th>3</th>      <th>4</th>      <th>5</th>     <th>6</th>  <th>7</th>     <th>10</th>  <th>20</th>  <th> 30</th>    </tr>
+<tr> <td> <b class="black">F<sub>n</sub></b></td>               <td>1</td>   <td>2 </td>     <td> 3</td>     <td>5 </td>    <td>8</td>  <td>13</td>    <td> 55</td>  <td>6765</td>  <td> 832040</td>    </tr>
+<tr> <td> <b class="black">N<sub>n</sub></b></td>               <td>3</td>   <td>5 </td>     <td> 9</td>     <td>15 </td>   <td>25</td> <td>41 </td>   <td>177</td>  <td>21891</td>  <td>2692537</td>      </tr>
+</table>
+</p>
+<!---
+<script>
+var n = new Array(100);
+n[0]=n[1]=1;
+for(var i=2; i < 40; i++){
+   n[i] = 1 + n[i-1] + n[i-2];
+   document.write(i," ",n[i], '<br>');
+}
+</script>
+--->
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec5"></a>
+<h2>Динамическое программирование</h2>
+
+<p>
+Проблема повторных рекурсивных вызовов функции обходится при помощи <i>динамического программирования</i>.
+Его идея состоит в сохранении всех вычисленных когда-либо значений функции. В результате, теряя в памяти,
+мы существенно выигрываем в быстродействии.
+При сохранении рекурсивности вызовов, подобных <b class="norm">Fib1(n)</b>,
+числа Фибоначчи в этом подходе вычисляются следующим образом:
+<pre class="brush: js">
+var fib = new Array(100);                         // массив объявлен, но его элементы === undefined
+
+function Fib2(n)
+{
+   if(fib[n] !== undefined) return fib[n];        // уже знаем, сразу возвращаем
+
+   if(n  <  1) return f[0]=0;
+   if(n === 1) return f[1]=1;
+
+   return fib[n] = Fib2(n-1)+Fib2(n-2);           // запоминаем новое значение и возвращаем его
+}
+</pre>
+что для <b class="norm">document.write(Fib2(8))</b> снова даст
+<b class="green">
+<script>
+var fib = new Array(100);                         // массив объявлен, но его элементы === undefined
+
+function Fib2(n)
+{
+   if(fib[n] !== undefined) return fib[n];        // уже знаем, сразу возвращаем
+
+   if(n  <  1) return f[0]=0;
+   if(n === 1) return f[1]=1;
+
+   return fib[n] = Fib2(n-1)+Fib2(n-2);           // запоминаем новое значение и возвращаем его
+}
+document.write(Fib2(8));
+</script></b>,
+однако, деревья рекурсивных вызовов получаются существенно компактнее:<br><br>
+<center>
+<script>
+function FibTree2(n, tr)
+{
+    tr.nm = n;
+   if(fib[n] !== 0) return  fib[n];               // уже знаем, сразу возвращаем
+   if(n   <  1) return 0;
+   if(n  === 1) return 1;
+   tr.ar = [ {}, {} ];
+   return  fib[n] = FibTree2(n-1, tr.ar[0]) + FibTree2(n-2, tr.ar[1]);
+}
+tree = {};
+for(var i=0; i < fib.length; i++) fib[i] = 0;
+FibTree2(3, tree);
+document.write(Tree.getSVG(tree),"&emsp;&emsp;&emsp;");
+
+tree = {};
+for(var i=0; i < fib.length; i++) fib[i] = 0;
+FibTree2(5, tree);
+document.write(Tree.getSVG(tree),"&emsp;&emsp;&emsp;");
+
+tree = {};
+for(var i=0; i < fib.length; i++) fib[i] = 0;
+FibTree2(7, tree)
+document.write(Tree.getSVG(tree));
+</script>
+</center>
+Выше массив объявлен при помощи оператора <b class="blue2">new</b>,
+который создаёт объект <b class="norm">Array</b> (массив). Под этот массив резервируется память,
+однако <b class="norm">100</b> его элементов остаются неопределёнными (равными <b class="norm">undefined</b>).
+Этот факт используется в первой строке функции (оператор <b class="norm">!==</b> означает неравенство без приведения типов), чтобы принять решение - запускать рекурсию или сразу
+возвращать уже известные значения.
+</p>
+<p>
+Заметим, что если функция <b class="norm">Fib2</b> используется только один раз, можно в принципе
+уменьшить размер массива, храня только последние два значения функции с предыдущего уровня дерева рекурсивных вызовов.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec6"></a>
+<h2>Упаковка рюкзака</h2>
+<p>
+Рассмотрим теперь более содержательный пример применения динамического программирования.
+Пусть есть набор предметов, каждый из которых характеризуется "размером" <b class="norm">s</b> и "ценностью" <b class="norm">v</b>.
+Необходимо отобрать те из них (можно по несколько раз), которые поместятся в рюкзаке размером <b class="norm">size</b>
+и в сумме дадут максимальную ценность.
+Если через  <b class="norm">x<sub>i</sub></b>  обозначить число предметов <b class="norm">i</b>-того вида,
+<b class="norm">s<sub>i</sub></b> - их размер и <b class="norm">v<sub>i</sub></b> - ценности, задачу можно записать следующим образом:
+<center>
+<pre><b class="bold"><span style="font-size:20px;">&sum;</span> x<sub>i</sub>s<sub>i</sub> &le; size,       <span style="font-size:20px;">&sum;</span> x<sub>i</sub>v<sub>i</sub> = max;</b></pre>
+</center>
+</p>
+<p>
+Идея <i>оптимальной упаковки</i> состоит в следующем. Берём предмет, вычитаем его размер из размера рюкзака, получая тем самым "маленький рюкзак".
+Затем оптимально упаковываем этот "маленький рюкзак". Решение об упаковки предмета принимается,
+если суммарная ценность его и ценность "маленького рюкзака" максимальна.
+</p>
+<p>
+Зададим массив предметов <b class="norm">items</b>, каждый из которых  представим объектом
+с полями <b class="norm">{s:размер, v:ценность}</b>. Сразу введём массив уже вычисленных ранее значений функции (динамическое программирование) и число её вызовов:
+<pre class="brush: js">
+var items = [ {s:1,v:1}, {s:5,v:6}, {s:11,v:14} ];// 3 вида предметов для упаковки
+
+var values = new Array(1000);                     // массив значений функции pack
+var numCalls    = 0;                              // число вызовов функции pack
+</pre>
+Эти три переменные являются <i>глобальными</i> и "видны" (доступны) везде, в том числе внутри функции
+<b class="norm">pack</b>, которая возвращает ценность оптимально упакованного рюкзака размером <b class="norm">size</b>
+и номер "последнего" упакованного предмета:
+<pre class="brush: js">
+function pack(size)                               // size - размер рюкзака
+{
+   numCalls++;                                    // подсчитываем число вызовов
+
+   if(values[size] !== undefined)
+      return values[size];                        // функция уже вычислялась
+
+   var maxV = 0, maxI = -1;                       // максимум ценности и номер оптимального предмета
+   for(var i=items.length; i--; ){                // ищем в списке items тот предмет,
+      var space = size - items[i].s;              // добавление которого в рюкзак
+      if( space >= 0 ){                           // (если это возможно)
+         var  v  = pack(space).v + items[i].v;    // даст суммарную ценность v (рекурсия)
+         if( v > maxV ){                          // если она максимальна,
+            maxV = v; maxI = i;                   // запоминаем номер предмета в maxI
+         }
+      }
+   }
+   return values[size] = { v:maxV, i:maxI };      // возвращаем ценность рюкзака и последний предмет
+}
+</pre>
+Так как функция должна вернуть 2 значения (ценность рюкзака и номер предмета),
+результатом её работы является объект <b class="norm">{v:ценность, i:номер_предмета}</b>.
+Упакуем рюкзак размером  <b class="norm">size=61</b>:
+<pre class="brush: js">
+var res, size=61;
+document.write("размер = ",size," ценность = ", pack(size).v,", число вызовов = ", numCalls,
+               "<br>предметы : ");
+
+var x = new Array(items.length);                  // массив количеств предметов i-того типа
+for(var i=x.length; i--; ) x[i]=0;                // обнуляем их
+
+while( (res = pack(size)).i >=0 ){                // выводим список предметов в рюкзаке
+   x[res.i]++;
+   size -= items[res.i].s;                        // уменьшаем размер и получаем следующий предмет
+}
+document.write(x);
+</pre>
+</p>
+<p>
+Результат работы скрипта:
+<pre class="outJS">
+<script>
+var items = [ {s:1,v:1}, {s:5,v:6}, {s:11,v:14} ];// 3 вида предметов для упаковки
+
+//var items = [ {s:1,v:1}, {s:2,v:2}, {s:3,v:4}, {s:5,v:7}, {s:7,v:11} ];// 5 видов предметов для упаковки
+//var items = [ {s:2,v:3}, {s:3,v:5}, ];
+/*
+function rnd(n) { return Math.floor(Math.random()*n); }
+var items = new Array(100);
+for(var i=items.length; i-- ; ) items[i] = {s: 1+rnd(10), v:1+rnd(10)}
+*/
+
+var values = new Array(10000);                    // массив значений функции pack
+var numCalls    = 0;                              // число вызовов функции pack
+
+function pack(size)                               // size - размер рюкзака
+{
+   numCalls++;                                    // подсчитываем число вызовов
+
+   if(values[size] !== undefined)
+      return values[size];                        // функция уже вычислялась
+
+   var maxV = 0, maxI = -1;                       // максимум ценности и номер оптимального предмета
+   for(var i=items.length; i--; ){                // ищем в списке items тот предмет,
+      var space = size - items[i].s;              // добавление которого в рюкзак
+      if( space >= 0 ){                           // (если это возможно)
+         var  v  = pack(space).v + items[i].v;    // даст суммарную ценность v (рекурсия)
+         if( v > maxV ){                          // если она максимальна,
+            maxV = v; maxI = i;                   // запоминаем номер предмета в maxI
+         }
+      }
+   }
+   return values[size] = { v:maxV, i:maxI };      // возвращаем ценность рюкзака и последний предмет
+}
+var res, size=61;
+document.write("размер = ",size," ценность = ", pack(size).v,", число вызовов = ", numCalls,
+               "<br>предметы : ");
+var x = new Array(items.length);                  // массив количеств предметов i-того типа
+for(var i=x.length; i--; )  x[i]=0;               // обнуляем их
+while( (res = pack(size)).i >=0 ){                // выводим список предметов в рюкзаке
+   //document.write(res.i,"{",items[res.i].s,",",items[res.i].v,"} ");
+   x[res.i]++;
+   size -= items[res.i].s;                        // уменьшаем размер и получаем следующий предмет
+}
+document.write(x);
+</script>
+</pre>
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="blue2">for</b>: <b class="norm">i++</b> или <b class="norm">i--</b>
+</div>
+Прокомментируем цикл по <b class="norm">i</b> в функции <b class="norm">pack</b>.
+Сперва <b class="norm">i=items.length</b>. Перед выполнением очередного цикла проверяется больше ли <b class="norm">i</b> нуля
+(<b class="norm">i &gt; 0</b>). <i>После</i> этого  <b class="norm">i</b> уменьшается на единицу (<b class="norm">i--</b>)
+и выполняется  итерация цикла.
+В результате мы проходим по массиву от последнего элемента к первому (нулевому).
+Элементы массива можно перебрать  и от первого к последнему:
+<b class="blue2">for</b><b class="norm">(<b class="blue2">var</b> i=0; i &lt; items.length; i++)</b>.
+Приведенный в функции <b class="norm">pack</b> способ компактнее в записи,
+однако в Google Chrome оказывается слегка медленнее.
+</p>
+<p>
+При выводе предметов, упакованных в рюкзак, в цикле <b class="blue2">while</b>
+происходит следующее. Сначала результат функции сохраняется в переменной <b class="norm">res</b>.
+Затем (так как это объект) по точке "добираемся" до свойства <b class="norm">i</b> (номер предмета)
+и, если он не отрицателен, "крутимся" дальше. Внутри цикла происходит уменьшение размера рюкзака на размер упакованного <b class="norm">i</b>-того предмета.
+</p>
+<p>
+Если закоментировать <b class="blue2">if</b> в начале функции (отказаться от динамического программирования),
+то число вызовов функции увеличится до <b class="norm">8032306</b>. Экономия получилась более, чем существенная.
+Причину этой экономии разберём на примере двух предметов: <b class="norm">{s:1,v:1}, {s:2,v:3}</b> и рюкзака размером  <b class="norm">size=8</b>.
+Построим пространство поиска (таблицу  заполненности и ценности рюкзака (<b class="norm">s,v</b>) при различных количествах предметов
+<b class="norm">x<sub>i</sub>=[x<sub>0</sub>, x<sub>1</sub>]</b>:
+</p>
+<style>
+table tr td, table tr th { width:3em;  }
+</style>
+<table class="center border leftTD leftTH">
+<tr><th>x<sub>1</sub>\x<sub>0</sub> </th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+<tr><th>0</th><td>0,0</td><td>1,1</td><td>2,2</td><td>3,3</td><td>4,4</td><td>5,5</td><td>6,6</td><td>7,7</td><td>8,8</td></tr>
+<tr><th>1</th><td>2,3</td><td>3,4</td><td>4,5</td><td>5,6</td><td>6,7</td><td>7,8</td><td>8,9</td></tr>
+<tr><th>2</th><td>4,6</td><td>5,7</td><td>6,8</td><td>7,9</td><td>8,10</td></tr>
+<tr><th>3</th><td>6,9</td><td>7,10</td><td>8,11</td></tr>
+<tr><th>4</th><td>8,12</td></tr>
+</table>
+<p>
+Видно, что одни и те же размеры (первая цифра) встречаются очень часто.
+Динамическое программирование один раз для данного размера
+запоминает оптимальную упаковку рюкзака и в дальнейшем расчёты не повторяет.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec5a"></a>
+<h2>Рекурсия без рекурсии <sup style="font-size:1em">*</sup></h2>
+<p>
+Иногда возникает необходимость контролировать процесс выполнения рекурсивных функций (например, для  анимирования или взаимодействия с человеком).
+В этом случае можно строить вычисления, так же, как это "делает"  компьютер.
+Идея разворачивания рекурсии состоит в сохранении каждого вызова функции, вместе с локальными переменными и аргументами в <i>стеке</i>.
+Стек - это очередь, в которую элементы помещаются в конец и от туда же извлекаются (первым вошёл - последним вышел).
+Ниже стек реализован при помощи обычного массива JavaScript.
+Кроме переменных в нём сохраняется также позиция в коде <b class="norm">pos</b>,
+куда необходимо вернуться после очередного рекурсивного  вызова.
+Ниже код соответствует функции вычисления чисел Фибоначчи <b class="norm">Fib1</b>.
+Естественно, в этом случае такой способ не имеет смысла,
+однако точно также можно поступать и когда нет простого нерекурсивного алгоритма:
+<pre class="brush: js">
+function FibStack(n)
+{
+   var res;                                       // итоговый результат работы
+   var stack = [ {n:n, pos:0, res:0} ];           // первый вызов функции помещаем в стек
+   while(stack.length){                           // пока стек не пустой
+      var fun = stack.pop();                      // берём последний вызов
+      switch(fun.pos){                            // переходим на нужное место в коде:
+         case 0:
+            if(fun.n < 1){
+               fun.res = 0;                       // результат вычисления
+               break;
+            }
+            if(fun.n === 1){
+               fun.res = 1;                       // результат вычисления
+               break;
+            }
+            fun.pos = 1;                          // следующий раз перейдём на case 1
+            stack.push(fun);                      // сохраняемся перед рекурсией
+            stack.push( {n:fun.n-1, pos:0,res:0});// рекурсивный вызов f(n-1)
+            break;
+         case 1:
+            fun.res = res;                        // f[n] = f[n-1]
+            fun.pos = 2;                          // следующий раз перейдём на case 2
+            stack.push(fun);                      // сохраняемся перед рекурсией
+            stack.push( {n:fun.n-2, pos:0,res:0});// рекурсивный вызов f(n-2)
+            break;
+         case 2:
+            fun.res += res;                       // f[n] += f[n-2]
+      }
+      res = fun.res;                              // промежуточный результат работы
+   }
+   return res;                                    // итоговый результат работы
+}
+</pre>
+</p>
+<script>
+function FibStack(n)
+{
+   var res;                                       // итоговый результат работы
+   var stack = [ {n:n, pos:0, res:0} ];           // первый вызов функции помещаем в стек
+   while(stack.length){                           // пока стек не пустой
+      var fun = stack.pop();                      // берём последний вызов
+      switch(fun.pos){                            // переходим на нужное место в коде:
+         case 0:
+            if(fun.n < 1){
+               fun.res = 0;                       // результат вычисления
+               break;
+            }
+            if(fun.n === 1){
+               fun.res = 1;                       // результат вычисления
+               break;
+            }
+            fun.pos = 1;                          // следующий раз перейдём на case 1
+            stack.push(fun);                      // сохраняемся перед рекурсией
+            stack.push( {n:fun.n-1, pos:0,res:0});// рекурсивный вызов f(n-1)
+            break;
+         case 1:
+            fun.res = res;                        // f[n] = f[n-1]
+            fun.pos = 2;                          // следующий раз перейдём на case 2
+            stack.push(fun);                      // сохраняемся перед рекурсией
+            stack.push( {n:fun.n-2, pos:0,res:0});// рекурсивный вызов f(n-2)
+            break;
+         case 2:
+            fun.res += res;                       // f[n] += f[n-2]
+      }
+      res = fun.res;                              // промежуточный результат работы
+   }
+   return res;                                    // итоговый результат работы
+}
+//document.write(FibStack(29));
+</script>
+</p>
+
+<p>
+<div class="LearnJS" style="width:9em"><b class="title">JavaScript</b><br>
+Ветвление <b class="blue2">switch</b></b>
+</div>
+Выше использовано <i>ветвление</i> <b class="blue2">switch</b>. В зависимости от значения целого числа <b class="norm">fun.pos</b>
+в аргументе команды <b class="blue2">switch</b><b class="norm">( ... )</b> происходит переход к тому или иному блоку (участку) кода после команд "<b class="blue2">case</b> <b class="norm">значение:</b>".
+Действие этого блока оканчивается командой <b class="blue2">break</b>. Так, из <b class="norm">0</b>-го <b class="blue2">case</b> есть три выхода за пределы
+конструкции ветвления (2 в операторах <b class="blue2">if</b> и один перед следующим <b class="blue2">case</b>).
+В "<b class="blue2">case</b><b class="norm"> 1:</b>" выход (<b class="blue2">break</b>) один, а из последнего "<b class="blue2">case</b><b class="norm"> 2:</b>" выход естественен,
+так как ниже закрываются фигурные скобки, ограничивающие область действия оператора ветвления  <b class="blue2">switch</b>.
+Важно помнить, что если в блоке  <b class="blue2">case</b> нет оператора  <b class="blue2">break</b>, управление передаётся в следующий блок <b class="blue2">case</b>.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("ИИ на JavaScript", "AI_JavaScript.html", "Грубая сила", "Force.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Recursion.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:05 GMT -->
+</html>

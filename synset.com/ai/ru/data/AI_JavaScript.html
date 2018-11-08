@@ -1,0 +1,833 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/AI_JavaScript.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:05 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>JavaScript для ИИ</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- рисование  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- деревья -->
+<script type="application/javascript"   src="../../_js/hanoi.js"></script>      <!-- решение ханойской головоломки  -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">JavaScript для ИИ</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#rec0">Введение</a></li>
+   <li><a href="#rec1">Hello world</a></li>
+   <li><a href="#rec1a">html - файл</a></li>
+   <li><a href="#rec2">Типы данных</a></li>
+   <li><a href="#rec3a">Строки</a></li>
+ </ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+      <li><a href="#rec3">Функции</a></li>
+      <li><a href="#arr2">Объекты и классы</a></li>
+      <li><a href="#canvas">Канвас</a></li>
+   <li><a href="#rec7">О памяти и указателях</a></li>
+   <li><a href="#rec8">Быстродействие</a></li>
+</ul>
+</div>
+</div>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec0"></a>
+<h2>Введение</h2>
+
+<p>
+Этим документом начинается серия <a href="http://synset.com/ai/ru/index.html">материалов</a>,
+посвящённых искусственному интеллекту и компьютерным наукам.
+Начнём мы с рассмотрения основных технологий программирования и структур данных,
+а затем перейдём к задачам, которые, обычно, принято относить к "интеллектуальным".
+</p>
+<p>
+В качестве рабочего инструмента программирования выбран язык JavaScript.
+Для его использования необходим лишь текстовый редактор
+(например <a href="https://notepad-plus-plus.org/"> Notepad++</a>)
+и браузер (предпочтительно Google Chrome, который имеет неплохие средства отладки).
+В интернете есть множество материалов, посвящённых  JavaScript,
+из которых стоит отметить <a href="http://www.w3schools.com/js/">w3schools.com</a>,
+<a href="https://developer.mozilla.org/">developer.mozilla.org</a>
+и <a href="https://learn.javascript.ru/">javascript.ru</a>.
+Конспективно JavaScript  рассмотрен и в <a href="http://synset.com/ai/ru/cab/js.html">шпаргалке</a> на этом сайте.
+Мы не будем детально описывать язык, делая лишь иногда небольшие отступления о его характерных особенностях.
+В этом документе представлен экспресс-обзор возможностей JavaScript.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec1"></a>
+<h2>Hello world</h2>
+
+<p>
+Создадим программу (скрипт) на JavaScript. Для этого откроем любой
+<a href="https://notepad-plus-plus.org/">текстовый редактор</a>
+и наберём:
+<pre class="brush: xml">
+&lt;script>
+</pre>
+<pre class="brush: js">
+   var st = "Hello world";                        // <- текстовая строка (а это комментарий)
+   document.write("Приветствие "+st);             // выводим текст в html-документ
+</pre>
+<pre class="brush: xml">
+&lt;/script>
+</pre>
+Файл сохраним с расширением html (например hello.html) и затем откроем в браузере.
+Там появится строка:
+<pre>
+   Приветствие Hello world.
+</pre>
+</p>
+<p>
+Глобальный (видимый отовсюду) объект  <b class="norm">document</b> является текущим
+html-документом, а его метод (функция) <b class="norm">write</b> выводит строку в том месте документа,
+где её вызвали. При этом <b class="norm">write</b> может содержать
+произвольное число аргументов (через запятую), которые выводятся последовательно.
+Например,  можно было написать: <b class="norm">document.write("Приветствие ", st)</b>.
+</p>
+<p>
+<p>
+JavaScript имеет C-подобный синтаксис. Например, операторы управления логикой программы (алгоритма) имеют следующий вид:
+<pre class="brush: js">
+if(a==1) res=1; else res=2;                       // условный переход
+
+switch (a) {                                      // оператор ветвления
+  case 1:  res=1;  break;                         // если a==1, то res=1
+  case 2:  res=2;  break;                         // если a==2, то res=2
+  default: res=0;  break;                         // в любом другом случае res=0
+}
+
+for (i = 0; i < 100; i++) a[i]=i;                 // цикл for перебирает числа от 0 дл 99
+
+i=0;
+while (i < 10) {                                  // цикл while перебирает числа от 0 до 9
+   i++;
+}
+
+do {                                              // цикл do-while (условие проверяется в конце)
+   i++;
+} while (i < 10)
+</pre>
+Каждая команда JavaScript оканчивается точкой с запятой (её можно не ставить, если команд в строке больше нет).
+В фигурные скобки окружают блоки из нескольких команд (выше, например, цикл <b class="blue2">while</b>).
+Код скрипта находится между парой тегов &lt;<b class="blue2">script</b>&gt; ... &lt;/<b class="blue2">script</b>&gt;.
+Их в документе может быть любое количество и они, обычно, чередуются с обычным текстом и тегами html-разметки.
+Далее в примерах  тег  <b class="blue2">script</b> будет опускаться.
+
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec1a"></a>
+<h2>html - файл</h2>
+<p>
+В общем случае, html-файл, в котором бракзер исполняет код JavaScript, состоит из двух разделов: заголовка (<b class="norm">head</b>) и тела документа (<b class="norm">body</b>):
+<pre class="brush: xml">
+&lt;html>                                         <!-- html-комментарий -->
+
+   &lt;head>                                      <!-- в заголовке можно подключить внешние файлы -->
+      &lt;title>Example Hello&lt;/title>             <!-- название этого документа -->
+      &lt;script src="hello.js">&lt;/script>         <!-- текст скрипта содержится в hello.js -->
+   &lt;/head>
+
+   &lt;body>                                      <!-- собственно тело html-документа -->
+      &lt;h1>Заголовок в начале страницы&lt;/h1>
+      &lt;h2>Название подраздела&lt;/h2>
+      &lt;p>Абзац, начинающийся с новой строчки. <b>Жирный текст</b>&lt;/p>
+   &lt;/body>
+&lt;/html>
+</pre>
+Скрипт  можно  также загрузить из внешнего файла, как это сделано выше для файла  <b class="norm">hello.js</b> (таких подключений "внешних модулей" может быть любое количество).
+</p>
+<p>
+Непосредственный вывод текста при помощи функции <b class="norm">document.write(...)</b> стоит использовать
+для простых случаев. В реальных проектах принято разделять визуальную составляющую
+информации (где, что должно находиться на странице), её внешний вид (он задается стилями)
+и динамическое поведение (собственно скрипт).
+JavaScript может обратиться к любому элементу страницы и поменять его.
+Соответствующий пример мы рассмотрим в конце этого документа.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec2"></a>
+<h2>Типы данных</h2>
+
+<p>
+Базовыми типами в JavaScript являются:  числа (Number), строки (String), массивы (Array) и  объекты (Object).
+JavaScript - это  <i>полиморфный язык</i>, т.е. тип  переменной может меняться и зависит от контекста её использования.
+Для объявления переменной служит директива <b class="blue2">var</b>:
+<pre class="brush: js">
+var size    = 5;                                  // это число  Number
+var ok      = true;                               // это логическая переменная
+var name    = "Tom";                              // это строка String
+var friends = [ "Jerry", "Merry", 137 ];          // это массив Array
+var house   = { addr:"City",  rooms:5 };          // это объект Object
+</pre>
+<script>
+var size    = 5;                                  // Number
+var name    = "Tom";                              // String
+var friends = [ "Jerry", "Merry", 137 ];          // Array
+var house   = { addr:"City",  rooms:5 };          // Object
+</script>
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Числа
+</div>
+Числа в JavaScript вещественные, но с ними можно делать и целочисленные операции
+(например, логический сдвиг на 8 бинарных разрядов  <b class="norm">1 &lt;&lt; 8</b> равен
+2 в степени 8 или <b class="green"><script>document.write( 1 << 8);</script></b> ).
+Существует объект <b class="norm">Math</b>, который предоставляет различные методы работы с числами.
+Например, <b class="norm">Math.sqrt(2)</b> - квадратный корень, <b class="norm">Math.sin(Math.PI)</b> - синус и число пи,
+<b class="norm">Math.random()</b> - псевдослучайное число от <b class="norm">0</b> до <b class="norm">1</b>,
+а <b class="norm">Math.floor(x)</b> - целая часть вещественного числа <b class="norm">x</b>.
+Полный список  всех функций можно найти, например,
+<a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Math">здесь</a>.
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Строки
+</div>
+Строки могут быть в двойных (<b class="norm">"строка"</b>) или одинарных (<b class="norm">'строка'</b>) кавычках.
+Их можно чередовать, например <b class="norm">"это 'строка' в строке"</b>.
+Знак плюс для строк означает их соединение, причём <b class="norm">"строка"+5</b> равно
+<b class="green">"<script>document.write("строка"+5);</script>"</b>,
+а <b class="norm">"строка"+(5+7)</b> -  равно  <b class="green">"<script>document.write("строка"+(5+7));</script>"</b>
+(сначала складываются числа, результат переводится в строку и присоединяется к строке).
+Каждая строка имеет свойство <b class="norm">length</b>, хранящее её длину (<b class="norm">"123abc".length</b> равно <b class="norm">6</b>).
+Строки можно сравнивать. Если <b class="norm">s1="abc"</b>, а <b class="norm">s2="acb"</b>,
+то <b class="norm">s1 &lt; s2</b> будет истиной (<b class="blue2">true</b>),  а <b class="norm">s1 == s2</b> -
+ложью (<b class="blue2">false</b>).
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Массивы
+</div>
+Массив можно объявить пустым: <b class="norm">friends = []</b> или инициализировать значениями.
+В примере выше,
+массив <b class="norm">friends</b> содержит три элемента и его длина (свойство <b class="norm">friends.length</b>) равна
+<b class="green"><script>document.write(friends.length);</script></b>. Можно также задать размер массива, но не определять
+его элементы: <b class="norm">friends = </b><b class="blue2">new</b><b class="norm"> Array(3)</b>.
+Доступ к элементам массива получается при помощи квадратных скобок, с нумерацией, ведущейся от нуля: <b class="norm">frends[0]</b>
+- это <b class="norm">"Jerry"</b>, а <b class="norm">frends[2]</b> - <b class="norm">137</b> (элементы массива могут иметь
+различный тип).
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Объекты
+</div>
+Объекты похожи на массивы, но доступ к хранимым в них данным  происходит не по номеру, а по имени (которое называется <i>свойством</i>).
+На имя  ссылаются, как и в массивах, при помощи квадратных скобок:
+<b class="norm">house["rooms"]</b>  или через точку: <b class="norm">house.rooms</b> (без кавычек). В обоих случаях получится <b class="norm"><script>document.write(house["rooms"])</script></b>.
+Новые разновидности данных (свойства) в объект можно добавлять и после его объявления.
+Например, в дальнейшем, написав <b class="norm">house.open = </b><b class="blue2">true;</b>,
+мы добавим в объект <b class="norm">house</b> третье свойство <b class="norm">"open"</b> со значением <b class="blue2">true</b>.
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">===</b> vs. <b class="norm">==</b></b>
+</div>
+Полиморфность языка приводит к некоторым особенностям
+сравнения величин.
+В JavaScript существует два вида равенства: двойное <b class="norm">==</b>
+и тройное <b class="norm">===</b>.
+Операция с двумя равенствами
+(<b class="norm">==</b>) делает сначала преобразование типов, а лишь затем величины сравнивает между собой.
+Так, <b class="norm">"1"==1</b> равно <b class="green"><script>document.write("1"==1);</script></b> (истина), а
+ <b class="norm">"1"===1</b> равно <b class="green"><script>document.write("1"===1);</script></b> (ложь, так как величины имеют различный тип: строка и число).
+ К чему будут преобразованы типы зависит от контекста. Например, при сравнении строки и числа, число преобразуется к строке,
+ как и при "складывании" строк (<b class="norm">"строка"+5</b> это <b class="norm">"строка5"</b>).
+ Если тип величин известен, лучше использовать более быстрое тройное равенство (нет приведения типов).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec3a"></a>
+<h2>Строки</h2>
+
+<p>
+Строки в JavaScript менять <i>нельзя</i>.
+Как только строка создана – она такая навсегда.
+Любые операции с ними приводят к созданию новых строк.
+Об этом стоит помнить при анализе производительности кода.
+Чтобы изменить некоторые символы в строке, можно превратить её в массив
+или воспользоваться регулярными выражениями.
+</p>
+<p>
+Приведём примеры работы со строками (нумерация символов строк, как и в массивах, начинается с нуля):
+<pre class="brush: js">
+var s = "box";                                    // ссылка на эту строку
+var txt = "string \
+in next line";                                    // строка на нескольких линиях
+
+s.length                                          // число символов в строке
+s.charAt(5)                                       // символ на 5-той позиции; тоже что s[5]
+s.charCodeAt(5)                                   // код unicode символа на 5-той позиции
+
+var arr = "a,b,c".split(',')                      // => массив ["a", "b", "c"] (строку на подстроки)
+s = s.substr(1, 2)                                // подстрока c 1-го символа длиной 2
+if( s.includes('ox') ){...}                       // есть ли подстрока
+'абв'.repeat(2);                                  // повторяем строку 2 раза: 'абвабв'
+</pre>
+</p>
+
+<p>
+Существуют функции, понимающие регулярные выражения .
+Например, заменить в строке все (параметр <b class="norm">g</b>) слова "<b class="norm">тяжело</b>"
+ на слово "<b class="norm">легко</b>", без учёта высоты букв (параметр <b class="norm">i</b>), можно следующим образом:
+<pre class="brush: js">
+s = 'Тяжело учиться, ох как тяжело.';
+s = s.replace(/тяжело/gi, 'легко');               // => легко учиться, ох как легко.
+</pre>
+Выражение в косых чертах (слешах) называется <i>шаблоном поиска</i>. Он может содержать различные специальные
+символы:<br><b class="green">^</b> - начало строки,
+<b class="green">[xy]</b> - один из символов (<b class="norm">[abcd]</b> - то же, что <b class="norm">[a-d]</b>),
+<b class="green">.</b> - любой символ,
+<b class="green">+</b> - повторение предыдущего символа <b class="norm">1</b> или более раз,
+<b class="green">{n,m}</b> повторение в интервале <b class="norm">[n...m]</b> раз,
+<b class="green">\s</b> -  пробел, табуляция или перевод каретки,
+<b class="green">\d</b>  -   цифра <b class="norm">[0-9]</b>  и т.д.
+Приведём примеры шаблонов (опуская слеши):
+<pre class="brush: js">
+^[0-9]+                                           // строка, начинающейся с цифры
+(\d{1,2}\/\d{1,2}\/\d{4})                         // дата: 18/1/2017
+</pre>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec3"></a>
+<h2>Функции</h2>
+
+<p>
+Ключевое слово  <b class="blue2">function</b> объявляет функцию. Например,
+факториал числа (<b class="norm">n!=n&middot;(n-1)&middot;...&middot;1</b> и <b class="norm">0!=1!=1</b>)
+даёт следующая функция:
+<pre class="brush: js">
+function fac(n)
+{
+   if( n < 2 ) return 1;                          // защита от отрицательных чисел
+
+   var res = n;                                   // возвращаемое значение
+   while( --n )                                   // пока (n = n-1) > 0
+      res *= n;                                   // перемножаем числа: res=res*n
+   return res;                                    // возвращаем результат
+}
+</pre>
+Если написать: <b class="norm">document.write("5!=", fac(5))</b>, то в документе появится:
+<b class="norm">
+<script>
+function fac(n)
+{
+   if( n < 2 ) return 1;                          // защита от отрицательных чисел
+
+   var res = n;                                   // возвращаемое значение
+   while( --n )                                   // пока (n = n-1) > 0
+      res *= n;                                   // перемножаем числа: res=res*n
+   return res;                                    // возвращаем результат
+}
+document.write("5!=",fac(5));
+</script></b>.
+</p>
+<p>
+<div class="LearnJS" ><b class="title">JavaScript</b><br>
+Цикл <b class="blue2">while</b></b>
+</div>
+Первая строка с условием <b class="blue2">if</b> - "защита" от отрицательных чисел,
+а ключевое слово <b class="blue2">return</b> возвращает значение функции.
+Далее начинает работать цикл <b class="blue2">while</b>, который "крутится" до тех пор, пока выражение в круглых скобках  истинно.
+В этих скобках происходит уменьшение числа <b class="norm">n</b> на <b class="norm">1</b>.
+Возможны два способа уменьшения: <b class="norm">n--</b> и <b class="norm">--n</b> (оба эквивалентны <b class="norm">n = n-1</b>).
+Однако, в первом случае сначала проводится проверка условия, а затем уменьшение,
+а во втором (<b class="norm">--</b> впереди) - сначала число уменьшается, а только затем участвует в проверке.
+В JavaScript, как и в C/C++, число "считается истинным", если оно отлично от нуля и ложным при нулевом значении.
+Поэтому <b class="blue2">while</b> крутится до тех пор, пока <b class="norm">n</b> больше единицы.
+При <b class="norm">n=1</b> получаем цепочку:<br>
+<b class="blue2">while</b><b class="norm">(--1)</b> &rArr;
+<b class="blue2">while</b><b class="norm">( 0 )</b> &rArr;
+<b class="blue2">while</b><b class="norm">(<b class="blue2">false</b>)</b> &rArr;
+цикл не выполняем.
+<script>
+function fac(n)
+{
+   if( n < 2 ) return 1;                          // защита от отрицательных чисел
+
+   var res = n;                                   // возвращаемое значение
+   while( --n )                                   // пока (n = n-1) > 0
+      res *= n;                                   // перемножаем числа: res=res*n
+   return res;                                    // возвращаем результат
+}
+//document.write(fac(4));
+</script>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="arr2"></a>
+<h2>Объекты и классы</h2>
+
+<p>
+В JavaScript функция одновременно является <i>именем класса</i> (потенциального множества однотипных объектов). Следующий код
+декларирует существование класса <b class="norm">House</b>, который хранит в себе 3 <i>свойства</i> (<b class="norm">addr, rooms, open</b>),
+а также может выполнять определенные действия (имеет <i>методы</i>):
+<pre class="brush: js">
+function House(addr, rooms)                       // задаём три свойства
+{
+   this.addr  = addr;                             // адрес дома
+   this.rooms = rooms;                            // число комнат
+   this.open  = false;                            // по умолчанию закрыт
+}
+
+House.prototype.toString = function ()            // выдать объект как строку
+{
+     return "Дом в "+this.addr + ", "+this.rooms+" комнат, сейчас "+(this.open?"открыт":"закрыт");
+}
+
+House.prototype.unlock = function ()              // открыть дом
+{
+   this.open  = true;                             // изменяем значение свойства
+}
+
+House.square = function (r)                       // статическая функция (площадь окружности)
+{
+   return Math.PI * r * r;
+}
+</pre>
+Описав класс, можно создать произвольное число объектов - <i>экземпляров</i> этого класса.
+Для этого служит оператор <b class="blue2">new</b>:
+<pre class="brush: js">
+var house = new House("City", 5);                 // создаём объект, как экземпляр класса House
+var villa = new House("Country", 10);             // создаём другой объект
+
+villa.unlock();                                   // вызываем метод класса
+
+document.write(house, ' (', house.open, ')<br>'); // выводим объекты как строки
+document.write(villa, ' (', villa.open, ')<br>'); // и получаем значение их свойств через точку
+document.write(House.square(1));                  // вызываем статическую функцию
+</pre>
+В результате работы этого скрипта получится:<br>
+<pre style="margin-left:2em; color:green; line-height:1em;">
+<script>
+function House(addr, rooms)                       // задаём три свойства
+{
+   this.addr  = addr;                             // адрес дома
+   this.rooms = rooms;                            // число комнат
+   this.open  = false;                            // по умолчанию закрыт
+}
+
+House.prototype.toString = function ()            // выдать объект как строку
+{
+     return "Дом в "+this.addr + ", "+this.rooms+" комнат, сейчас "+(this.open?"открыт":"закрыт");
+}
+
+House.prototype.unlock = function ()              // открыть дом
+{
+   this.open  = true;                             // изменяем значение свойства
+}
+
+House.square = function (r)                       // статическая функция (площадь окружности)
+{
+   return Math.PI * r * r;
+}
+
+var house = new House("City", 5);                 // создаём объект, как экземпляр класса House
+var villa = new House("Country", 10);             // создаём другой объект
+
+villa.unlock();                                   // вызываем метод класса
+
+document.write(house, ' (', house.open, ')<br>'); // выводм объекты как строки
+document.write(villa, ' (', villa.open, ')<br>'); // и получаем значение их свойств через точку
+document.write(House.square(1));                  // вызываем статическую функцию
+</script>
+</pre>
+</p>
+<p>
+Обратим внимание, что когда мы описываем класс как абстрактную сущность, доступ к свойствам осуществляется при помощи указателя <b class="blue2">this</b>.
+А для экземпляра класса доступ к свойствам делается как и для любого объекта (выше так выведены значения свойства <b class="norm">house.open</b> и <b class="norm">villa.open</b> двух различных объектов).
+</p>
+<p>
+Все методы которые доступны объектам (экземплярам класса) должны объявляться при помощи свойства <b class="norm">prototype</b>.
+Если его нет, то метод является <i>статическим</i>. Он не доступен экземплярам, но может быть вызван самим классом (выше - функция вычисления площади окружности).
+Подобным статическим образом организованы константы (свойства) и методы встроенного в JavaScript объекта <b class="norm">Math</b> (выше - число <b class="norm">PI</b>).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="canvas"></a>
+<h2>Канвас</h2>
+
+<p>
+JavaScript позволяет рисовать на html-странице.
+Для этого служит тег <b class="blue2">canvas</b>, в котором задаётся ширина (<b class="norm">width</b>)
+и высота (<b class="norm">height</b>) области рисования.
+Ниже приведен простой пример html-документа:
+<pre class="brush: xml">
+&lt;html&gt;
+
+   &lt;head&gt;
+      &lt;style&gt;
+         canvas.dashed {background-color: #fff; border: 1px dashed black; }
+      &lt;/style&gt;
+   &lt;/head&gt;
+
+   &lt;body&gt;
+      &lt;canvas id="canID" class="dashed" width="600" height="40"&gt;&lt;/canvas&gt;
+      &lt;script&gt; .... &lt;/script&gt;
+   &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+ В его заголовке
+объявляется <i>класс стиля</i> с именем <b class="norm">dashed</b>.
+Если канвас (описанный в теле документа) содержит свойство <b class="blue2">class</b><b class="norm">="dashed"</b>,
+то область рисования окажется обведенной пунктирной рамкой.
+Тег канвас, по-мимо указания размеров и класса стиля содержит идентификатор <b class="blue2">id</b><b class="norm"> = "canID"</b>.
+По этому идентификатору к канвасу можно "достучаться" из JavaScript:
+<pre class="brush: js">
+plot();                                          // запускаем функцию рисования
+
+function plot()
+{
+   var canvas = document.getElementById('canID');// получаем объект канваса
+   var ctx = canvas.getContext('2d');            // у него есть свойство - контекст рисования
+   ctx.fillRect(canvas.width/2-50, canvas.height/2-10, 100, 20);
+}
+</pre>
+В этом примере сначала получается объект html-страницы <b class="norm">canvas</b>
+при помощи функции <b class="norm">getElementById</b>.
+Этот объект имеет функцию <b class="norm">getContext</b> которая возвращает
+контекст рисования. Это тоже объект,
+со множеством функций рисования графических примитивов и работы с растровой графикой.
+В частности, в последней строке функции выводится залитый прямоугольник размерами <b class="norm">100 x 20</b>
+в центре канваса (объект <b class="norm">canvas</b> знает свои размеры).
+Вот к чему это приводит:
+</p>
+<p>
+
+<style>
+canvas.dashed { background-color: #fff; border: 1px dashed black; }
+</style>
+<p>
+<center>
+<canvas id="canID" class="dashed" width="600" height="40"></canvas>
+</center>
+</p>
+
+<script>
+plot();                                          // запускаем функцию рисования
+
+function plot()
+{
+   var canvas = document.getElementById('canID');// получаем объект канваса
+   var ctx = canvas.getContext('2d');            // у него есть свойство - контекст рисования
+   ctx.fillRect(canvas.width/2-50, canvas.height/2-10, 100, 20);
+}
+</script>
+</p>
+<p>
+По-мимо вывода графики, канвас может взаимодействовать с мышкой.
+Ниже приведена <a href="http://synset.com/ai/ru/search/Towers_of_Hanoi.html">ханойская головоломка</a>,
+которая будет подробно рассмотрена в дальнейшем.
+В ней есть
+<input type="text" id="nTowersID" value="3"
+onchange="n = Number(this.value);  n = (n<=2? 2:(n>5?5:n)); this.value=n; hanoiM_init();"
+style="width:1.5em;text-align:center; color:#069; font-weight: bold; ">
+стержня и
+<input type="text" id="nDisksID" value="5"
+onchange="n = Number(this.value);  n = (n<=3? 3:(n>12?12:n)); this.value=n; hanoiM_init();"
+style="width:1.5em;text-align:center; color:#069; font-weight: bold; ">
+дисков (числа можно менять).
+Эти диски необходимо по одному переложить с первого стержня на второй.
+Можно использовать все стержни, но диски большего диаметра должны всегда находиться ниже дисков меньшего диаметра
+(кликните мышкой по картинке).
+<center>
+<canvas id="canvasHanoiM" width="900" height="160" class="dashed"></canvas>
+</center>
+
+<script>
+var hanoiM;
+function hanoiM_init(){
+   var nDisks  = Number(document.getElementById("nDisksID").value);
+   var nTowers = Number(document.getElementById("nTowersID").value);
+   hanoiM = new Hanoi(nDisks, nTowers);
+   hanoiM.canvas  = document.getElementById('canvasHanoiM');
+   hanoiM.canvas.width = (nTowers-1)*hanoiM.dx + hanoiM.baseW;
+   hanoiM.draw = new Draw("canvasHanoiM");
+   hanoiM.show();
+}
+hanoiM_init();
+
+function hanoiM_mouseUp(event)
+{
+   //event.preventDefault();
+   var rct = hanoiM.canvas.getBoundingClientRect();
+   var x = event.clientX - rct.left;              // координаты мыши
+   var y = event.clientY - rct.top;
+   hanoiM.mouseUp(x,y);
+}
+hanoiM.canvas.addEventListener("mouseup",  hanoiM_mouseUp, false);
+setInterval(function(){ hanoiM.timer() }, 50);
+</script>
+</p>
+<p>
+Кроме канваса, выводить графику можно при помощи векторных картинок в svg-формате
+или средствами WebGL, позволяющего работать с 3D-графикой.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec7"></a>
+<h2>О памяти и указателях</h2>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Память
+</div>
+В JavaScript переменные, объявленные как строки, массивы или объекты, являются на самом деле
+указателями на память, где хранятся соответствующие данные.
+Это позволяет без особых затрат возвращать, например, объекты из функции или передавать их в функцию в качестве аргументов.
+</p>
+<p>
+Разберём подробнее особенности работы с указателями на следующем примере (справа зелёным - результат работы скрипта):
+<div style="overflow:hidden; margin-top:-1em;">
+<div style="float:left; width:800px;">
+<pre class="brush: js">
+function prn(x,y){ document.write("x.v=",x.v,", y.v=",y.v,'<br>'); }
+
+var x = { v:1 };         // выделяется память под объект, на неё ссылается x
+var y = x;     prn(x,y); // y ссылается на эту же память
+x.v = 2;       prn(x,y); // данные в памяти может поменять, как x
+y.v = 3;       prn(x,y); // так и y
+x  = { v:4 };  prn(x,y); // x теперь ссылается на другую память
+y  = x;        prn(x,y); // исходная память "потеряна"
+</pre>
+</div>
+<div style="float:left; margin-top:2em;">
+<pre class="outJS" style="15em">
+<script>
+function prn(x,y){ document.write("x.v=",x.v,", y.v=",y.v,'<br>'); }
+
+var x = { v:1 };         // выделяется память под объект, на неё ссылается x
+var y = x;     prn(x,y); // y ссылается на эту же память
+x.v = 2;       prn(x,y); // данные в памяти может поменять, как x
+y.v = 3;       prn(x,y); // так и y
+x  = { v:4 };  prn(x,y); // x теперь ссылается на другую память
+y  = x;        document.write("x.v=",x.v,", y.v=",y.v);  // исходная память "потеряна"
+</script>
+</pre>
+</div><div style="clear:left"></div>
+</div>
+Вначале выделяется память для хранения объекта  с одним свойством: <b class="norm">{ v:1 }</b>.
+На эту память ссылаются 2 переменные <b class="norm">x</b> и <b class="norm">y</b>.
+Поэтому изменение свойства <b class="norm">v</b> в одной (любой) переменной, "почувствует" и другая.
+Затем, в присвоении <b class="norm">x  = { v:4 }</b>,  выделяется  память на хранение ещё одного объекта.
+Переменная <b class="norm">"x"</b> ссылается на него, а <b class="norm">"y"</b> ссылается на старый объект.
+Теперь изменения свойства <b class="norm">v</b> этих переменных происходят независимо (каждое в своей памяти).
+Наконец, при присвоении <b class="norm">y=x</b>, переменная <b class="norm">"y"</b> начинает ссылаться (как и <b class="norm">"x"</b>)
+на новый объект.
+На старый объект уже ни кто не ссылается и <i>сборщик мусора</i> браузера эту память освободит.
+Ситуация со строками аналогична, и переменная объявленная как <b class="norm">x="строка"</b>,
+является указателем на память, где строка хранится.
+</p>
+<p>
+Сборщик мусора, освобождающий неиспользуемую память, в современных браузерах достаточно эффективен.
+Однако, ему стоит помогать, указывая когда память становится не нужной.
+Например, пусть для вычислений был выделен очень большой массив <b class="blue2">var</b><b class="norm"> ar = <b class="blue2">new</b> Array(1000000)</b>.
+После его использования стоит написать <b class="norm">ar = </b><b class="blue2">null</b>,
+что приведёт к освобождению памяти. Ключевое слово <b class="blue2">null</b> означает
+"нулевой адрес памяти" (это указатель, который никуда не ведет).
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="blue2">null</b> vs. <b class="blue2">undefined</b>
+</div>
+Переменные могут быть также неопределёнными (вообще ни куда не ссылаться).
+Между неопределённым свойством <b class="blue2">undefined</b> и нулевым свойством <b class="blue2">null</b> есть заметная разница.
+Пусть <b class="norm">obj = { x:null }</b>. Тогда свойство <b class="norm">obj.y</b> является <b class="blue2">undefined</b> (его там нет),
+а свойство <b class="norm">obj.x</b> в объекте есть (и под его указатель выделена память),
+но оно (свойство) ссылается на "нулевой" адрес памяти.
+При сравнении без приведения типов <b class="norm">null === undefined</b>
+получится <b class="blue2"><script>document.write(null === undefined);</script></b> (это различные сущности),
+a <b class="norm">null == undefined</b> - это  <b class="blue2"><script>document.write(null == undefined);</script></b>.
+</p>
+<p>
+В низкоуровневых языках, таких как C/С++ или Assembler,  программист должен
+заботиться, как о выделении памяти, так и о её освобождении. JavaScript в этом отношении
+существенно более дружественный язык.
+Например, если при обращении к элементу массива мы выходим за границы массива (свойство <b class="norm">length</b>), ни чего "плохого" не происходит
+и размер массива автоматически увеличивается.
+Впрочем, за всё необходимо платить.
+И в данном случае - чуть более низким (хотя и не существенно) быстродействием по сравнению с низкоуровневыми языками.
+</p>
+
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rec8"></a>
+<h2>Быстродействие</h2>
+
+<p>
+Раз зашла речь о быстродействии, проведём несколько тестов.
+Так как они занимают время, будем запускать их  по нажатию кнопки <b class="norm">run</b>.
+Для этого добавим в html-файл  следующий код:
+<pre class="brush: xml">
+&lt;input type="button" value="run" onclick="speed()">  время = &lt;b id="timeID">&lt;/b> ms.
+
+&lt;script>
+</pre>
+<pre class="brush: js">
+var totTime = 0, totRuns = 0;                     // общее время и число запусков функции
+
+function speed()
+{
+   var time = window.performance.now();           // начальное время
+   Fib(35);                                       // некоторые вычисления
+   time = window.performance.now() - time;        // время, затраченное на вычисления
+
+   totTime += time;                               // суммарное время
+   totRuns++;                                     // число запусков
+
+   document.getElementById("timeID").innerHTML = time.toFixed(0) + ", aver = "
+                                               + (totTime/totRuns).toFixed(0) + "("+totRuns+")";
+}
+</pre>
+<pre class="brush: xml">
+&lt;/script>
+</pre>
+</p>
+<p>
+В результате появится кнопка (<b class="norm">type="button"</b>)
+с надпиью "run" (value="run"), при нажатии на которую запустится функция <b class="norm">speed</b>
+ (<b class="norm">onclick="speed()"</b>).
+Последняя строка функции поменяет текст в теге <b class="norm">&lt;<b class="blue2">b</b>&gt;</b>:
+<input type="button" value="run" onclick="speed();">  время = <b class="norm" id="timeID"></b> ms (нажмите на кнопку несколько раз).
+<script>
+var totTime = 0, totRuns = 0;                     // общее время и число запусков функции
+
+function Fib(n)
+{
+   if(n  <  1) return 0;                          // F0 = 0 - обрыв рекурсии
+   if(n === 1) return 1;                          // сравниваем без преобразования типа (так быстрее!)
+
+   return Fib(n-1)+Fib(n-2);                      // два рекурсивных вызова
+}
+
+function speed()
+{
+   var time = window.performance.now();           // начальное время
+   Fib(35);
+   time = window.performance.now() - time;        // время, затраченное на вычисления
+
+   totTime += time;                               // суммарное время
+   totRuns++;                                     // число запусков
+
+   document.getElementById("timeID").innerHTML = time.toFixed(0) + ", aver = "
+                                               + (totTime/totRuns).toFixed(0) + "("+totRuns+")";
+}
+</script>
+</p>
+<p>
+Функция <b class="norm">getElementById</b> объекта <b class="norm">document</b>
+находит на html-странице тег со  свойством <b class="norm">id="timeID"</b>
+и возвращает его  как объект (аналогично канвасу). У него есть свойство <b class="norm">innerHTML</b> -
+текст внутри тега: <b class="norm">&lt;b id="timeID"&gt;...&lt;/b&gt;</b>.
+В этом месте и выводится время вычислений в миллисекундах (ms) и среднее значение по <b class="norm">totRuns</b> запускам.
+Для этого, перед началом вычислений в переменной <b class="norm">time</b> запоминается время,
+а после вычислений оно вычитается из времени на тот момент.
+Текущее время возвращает окно браузера - объект <b class="norm">window</b>.
+</p>
+
+<p>
+Ниже в таблице приведено время в миллисекундах работы рекурсивной функции <b class="norm">Fib1(n)</b> (см. <a href="Recursion.html">следующий документ</a>) в JavaScript
+и С++ (gcc 64bit). Кроме этого, дано время суммирования в цикле по <b class="norm">i</b>
+c <b class="norm">10000000</b> итерациями некоторых величин:
+<br><br>
+<table class="center border rightTD norm">
+<tr> <th style="width:5em"></th> <th>Fib(35)</th>    <th>Fib(40)</th>    <th> &emsp;&emsp;i &emsp;&emsp;</th>     <th>&emsp; i*i&emsp;</th>  <th>sqrt(i*0.1)</th>  <th>sin(i*0.1)</th>   
+<tr> <th> JavaScript</th>        
+<td>100 </td>      <td> 1100</td>       <td>140 </td>   <td> 140 </td>  <td>  130</td>      <td>  330 </td>     </tr>
+<tr> <th> C++</th>               
+<td>60 </td>      <td>  700</td>       <td> 25 </td>    <td> 30 </td>  <td>   315</td>       <td>  600</td>       </tr>
+</table>
+<br>
+Как видно,
+быстродействие скриптового языка JavaScript вполне сравнимо с быстродействием C++.
+Заметим, что синус от "целочисленных" аргументов (например, <b class="norm">sin(i*1)</b>)  почти в 5 раз
+медленнее, чем от "вещественных" (например, <b class="norm">sin(i*0.1)</b>).
+Небольшого ускорения можно добиться также, положив <b class="blue2">var</b> <b class="norm">sin = Math.sin;</b> и затем
+писать не <b class="norm">Math.sin(...)</b>, а <b class="norm">sin(...)</b> и т.д.
+</p>
+<p>
+Google Chrome часто повторяемые участки JavaScript кода компилирует в ассемблер.
+Поэтому, вычисления с "дорогими" вещественными функциями, подобными <b class="norm">exp</b> или <b class="norm">sin</b> будут работать
+со сравнимой скоростью. В целочисленных вычислениях C++, конечно, быстрее, т.к. не производит ненужных преобразований типов переменных.
+</p>
+<p>
+На комплексных тестах JavaScript,  уступает С++, впрочем, не значительно.
+Например, <a href="http://synset.com/ai/ru/tsp/Salesman_Intro.html">задача коммивояжёра</a>, решаемая методом
+<a href="http://synset.com/ai/ru/tsp/Salesman_Branch_And_Bound.html">ветвей и границ </a>
+на JavaScript требует примерно на 25% больше времени, чем тот же алгоритм, реализованный на C++.
+В большинстве случаев это не критично.
+</p>
+<!--
+<input type="button" value="run" onclick="speed2();">  время = <b class="norm" id="timeID2"></b>
+
+<script>
+var numTotTime = 0, numTotRuns = 0;
+function speed2()
+{
+   var time = window.performance.now();                         // начальное время
+   var fun = Math.sin;
+   var res = 0;
+   for(var i=0; i< 10000000; i++){
+      res += Math.abs(i);
+      //res += Math.atan2(0.1*i, 0.1);
+      //res += fun(i*0.1);
+      //res += Math.sqrt(i);
+      //res += Math.sin(i*1);
+      //res += i*i;
+      //res += Math.random();
+   }
+   time = window.performance.now() - time;                      // время, затраченное на вычисления
+   numTotTime += time;
+   numTotRuns++;
+   document.getElementById("timeID2").innerHTML = time.toFixed(0) + "ms, aver = "
+                                                  + (numTotTime / numTotRuns).toFixed(0) + "("+numTotRuns+")";
+}
+</script>
+-->
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Оглавление", "http://synset.com/ai/ru/index.html", "Рекурсия", "Recursion.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/AI_JavaScript.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:06 GMT -->
+</html>

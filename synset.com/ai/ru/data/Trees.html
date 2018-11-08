@@ -1,0 +1,860 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Trees.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:09 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Деревья</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- работа с деревьями  -->
+<script type="application/javascript"   src="../../_js/list.js"></script>       <!-- работа со списками  -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+
+<h1 class="section_name">Деревья</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#structure">Структура</a></li>
+   <li><a href="#print">Вывод дерева</a></li>
+   <li><a href="#copy">Копирование деревьев</a></li>
+   <li><a href="#rand">Генерация деревья</a></li>
+   <li><a href="#parse">Деревья как функции</a></li>
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#gif1">Дерево как файловая система</a></li>
+   <li><a href="#gif2a">Функция <b class="norm">getANSII</b> </a></li>
+   <li><a href="#gif2">Реализация <b class="norm">getGIF</b> </a></li>
+   <li><a href="#svg">Графическое svg-представление</a></li>
+   <li><a href="#ref">Справочник</a></li>
+</ul>
+</div>
+</div>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="structure"></a>
+<h2>Структура</h2>
+<p>
+Дерево является  <a href="Graphs.html">графом</a> у которого есть единственный
+узел, называемый <i>корнем</i>. Рёбрами он связан с другими узлами (непосредственными </i>потомками</i> корня).
+Эти потомки, в свою очередь, имеют собственных потомков и т.д.
+Перемещаясь от корня по узлам дерева, можно попасть в любой узел, причём <i>единственным</i> образом.
+Деревья широко используются в различных задачах поиска решений. В этом документе
+обсуждаются  способы визуального представления деревьев.
+К алгоритмам обработки деревьев мы вернёмся в дальнейшем.
+</p>
+<p>
+Дерево будем задавать объектом: <b class="norm">{ nm, ar }</b>,
+где <b class="norm">nm</b> - имя узла, а <b class="norm">ar</b> - массив ветвей (ближайших потомков).
+Так, следующий объект <b class="norm">tree</b> описывает бинарное дерево глубины 2, изображенное справа на рисунке:
+<div style="overflow:auto;  margin-top: -1em;">
+<div  style="width:40em; float:left;">
+<pre class="brush: js">
+var tree = {
+   nm:"root",
+   ar:[
+      {nm: "b1", ar:[ {nm:"a"}, {nm:"b"}] },
+      {nm: "b2", ar:[ {nm:"c"}, {nm:"d"}] },
+   ]
+};
+</pre>
+</div>
+<div style="margin-top:2em;">
+<script>
+var test1_tree =
+{
+   nm:"root",
+   ar:[
+      {nm: "b1", ar:[ {nm:"a"}, {nm:"b"}] },
+      {nm: "b2", ar:[ {nm:"c"}, {nm:"d"}] },
+   ]
+};
+document.write(Tree.getSVG(test1_tree));
+</script>
+</div>
+</div>
+Это дерево имеет 7 узлов, 4 из которых - <i>терминальные</i>. Такие узлы также называются <i>листьями</i>.
+Далее предполагается, что дерево имеет хотя бы один (корневой) узел: <b class="norm">{ nm: "root" }</b>.
+Как это часто бывает в компьютерной графике (с осью <b class="norm">y</b>, направленной вниз),
+ветви деревьев на картинках растут вниз. Поэтому, говоря  о спуске по дереву вниз, мы будем подразумевать продвижение от корня к листьям.
+</p>
+<p>
+<div class="LearnJS" style="width:8em"><b class="title">JavaScript</b><br>
+<b class="norm">JSON.stringify</b>
+</div>
+Внутреннее представление структуры любого объекта в виде строки, можно получить при помощи вызова функции
+<b class="norm">JSON.stringify(tree)</b> объекта <b class="norm">JSON</b>.
+Однако она даёт кавычки в названии свойств: <b class="norm">{"nm":"root","ar":...</b>,
+поэтому, для большей читабельности, обернём её
+<i>регулярным выражением</i>, удаляющим эти кавычки:
+<pre class="brush: js">
+Tree.getJSON = function (tr)
+{
+   return JSON.stringify(tr).replace(/"(\w+)":/g, "$1:");
+}
+</pre>
+<div class="LearnJS" style="width:8em"><b class="title">JavaScript</b><br>
+<b class="norm">replace</b>
+</div>
+У функции <b class="norm">replace</b> первым аргументом внутри слешей находится шаблон поиска.
+Запись <b class="norm">\w+</b> означает
+символы из латинского алфавита, цифр или подчёркивания: <b class="norm">[A-Za-z0-9_]</b>, которые идут подряд один или более раз
+(плюс после <b class="norm">\w</b>). Круглые скобки: <b class="norm">(\w+)</b> означают, что найденная подстрока
+запоминается в "переменной" <b class="norm">$1</b>, которая используется во втором аргументе функции <b class="norm">replace</b>.
+Там определяется замена, которую необходимо провести в найденном шаблоне (буква <b class="norm">g</b> после слеша означает глобальный поиск по всей строке).
+</p>
+<p>
+Функция <b class="norm">getJSON</b> является статической и не требует создания экземпляра
+класса <b class="norm">Tree</b> при помощи <b class="blue2">new</b>.
+Можно просто написать: <b class="norm">document.write( Tree.getJSON(tree) )</b>, что даст строку:
+<pre style="margin-left:2em;">
+<script>document.write(Tree.getJSON(test1_tree));</script>
+</pre>
+</p>
+<p>
+В классе <b class="norm">Tree</b> все статические функции продублированы как "динамические",
+при помощи указателя <b class="norm">prototype</b>:
+<pre class="brush: js">
+function Tree(tr)
+{
+   if(tr){
+      this.nm  = tr.nm;
+      this.ar  = tr.ar;
+   }
+}
+
+Tree.prototype.getJSON = function ()
+{
+   return Tree.getJSON(this);
+}
+</pre>
+Таким образом, класс <b class="norm">Tree</b> может в статическом варианте обрабатывать структуры подобные <b class="norm">tree</b>,
+а в динамическом - хранить дерево "внутри себя".
+Например, дерево в JSON-формате можно вставить в документ также так: <b class="blue2">var</b> <b class="norm">t = new Tree(tree); document.write( t.getJSON() )</b>.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="print"></a>
+<h2>Вывод дерева</h2>
+
+<p>
+При работе с деревьями естественно использовать рекурсивные методы.
+Напишем, например, функцию вывода дерева в "функциональном" виде,
+которая для структуры  <b class="norm">tree</b>, приведенной выше, выдаст строку:
+<b class="norm"><script>document.write(Tree.getFun(test1_tree));</script></b>:
+<div style="overflow:hidden;  margin-top: -1em; width:100%">
+<div  style="float:left; width:840px;">
+<pre class="brush: js">
+Tree.getFun = function (tr)
+{
+   if(!tr.ar)
+      return  tr.nm;                              // финальный лист
+
+   var res = tr.nm+"(";                           // имя функции и открытие скобки
+   for(var i=0; i < tr.ar.length ; i++)           // выводим список аргументов
+      res += this.getFun(tr.ar[i])                // рекурсивно для ветвей
+           + (i+1 < tr.ar.length? "," : "");      // запятая в списке, но не в конце
+   return res + ")";                              // закрываем скобку
+}
+</pre>
+</div>
+<div style="width:120px; vertical-align:top; font-family:Consolas,monospace;  float:right;  margin-top:2em">
+<script>document.write(Tree.getUL(test1_tree));</script>
+</div>
+</div>
+Небольшие изменения этой функции, позволяют вывести дерево в виде списка html (функция <b class="norm">Tree.getUL(tr)</b>,
+выше, справа). Ещё две функции <b class="norm">Tree.getGIF(tr)</b> (в виде папочек) и  <b class="norm">Tree.getSVG(tr)</b>
+(традиционное преставление) будут рассмотрены позднее.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="copy"></a>
+<h2>Копирование деревьев</h2>
+<p>
+Присвоение деревьев, как и любых объектов, проводится по ссылке.
+Чтобы получить независимую копию дерева, напишем незамысловатую функцию:
+<pre class="brush: js">
+Tree.copy = function (tr)
+{
+   return JSON.parse(JSON.stringify(tr));
+}
+</pre>
+Теперь для следующего кода
+<pre class="brush: js">
+var tree1 = { nm:"root", ar:[ {nm: "b1"}, {nm: "b2"} ] };
+
+var tree2 = tree1;                                // тоже дерево (по ссылке)
+var tree3 = Tree.copy(tree1);                     // независимая копия
+
+tree1.ar[0].nm = "b3";                            // меняем имя узла потомка
+
+document.write(Tree.getFun(tree1), ';  ', Tree.getFun(tree2),' и ', Tree.getFun(tree3));
+</pre>
+получим:
+<b class="norm">
+<script>
+{
+  var tree1 = { nm:"root", ar:[ {nm: "b1"}, {nm: "b2"} ] };
+
+  var tree2 = tree1;               // тоже дерево (по ссылке)
+  var tree3 = Tree.copy(tree1);    // независимая копия
+
+  tree1.ar[0].nm = "b3";           // меняем имя узла потомка
+
+  document.write(Tree.getFun(tree1), ';  ', Tree.getFun(tree2),' и ', Tree.getFun(tree3));
+}
+</script>
+</b>.
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">JSON.parse</b>
+</div>
+В функции <b class="norm">copy</b> снова использован объект <b class="norm">JSON</b>, функция <b class="norm">parse</b>
+которого позволяет преобразовать строку в объект, произведя её синтаксический анализ.
+Поэтому сначала, при помощи <b class="norm">JSON.stringify</b>, дерево превращается в строку,
+затем эта строка функцией <b class="norm">parse</b> преобразуется опять в дерево, но уже в <i>новой</i> памяти.
+Заметим, что в JavaScript объекты можно копировать (клонировать), как и массивы, следующим образом: <b class="norm">copy_obj = Object.assign( {} , obj);</b> Однако метод <b class="norm">assign</b> копирует только простые типы и не работает
+рекурсивно. Так как с узлом в дальнейшем могут быть связаны различные данные, ограничимся таким, не самым эффективным,
+однако простым способом копирования.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="rand"></a>
+<h2>Генерация деревьев</h2>
+<p>
+Для тестирования различных алгоритмов, необходимо создавать деревья "на лету".
+Напишем функцию, генерящую случайные деревья:
+<input class="button" type="button" value="run" onclick="run('run_out_id');" style="">
+<input class="button" id="check_id" type="checkbox" onclick="run('run_out_id');">Рисовать ящики: <br>
+<b  class="green" id="run_out2_id" style="float:right; margin-right:1em; margin-top:-1em;"></b><br>
+<center>
+<div id="run_out_id" style="width:99%; height:120px; margin:-2em 0 2em 0;  font-family:Consolas,monospace; padding:0.2em; color:green; border: 1px solid black;"></div>
+<script>
+run('run_out_id');
+function run(out_id)
+{
+  var b = Tree.svg.bound = document.getElementById('check_id').checked;
+  Tree.count = -1;
+  var t = Tree.rand(3, 4, 0.1);
+  document.getElementById(out_id).innerHTML = Tree.getSVG(t);
+  document.getElementById('run_out2_id').innerHTML = "глубина:"+Tree.depth(t)+" узлов:"+Tree.numNodes(t)+" листьев:"+Tree.numLeaves(t);
+  Tree.svg.bound = b;
+}
+</script>
+</center>
+</p>
+<p style="margin-top:-1em">
+Функция <b class="norm">Tree.rand</b> принимает на вход 3 параметра:
+<b class="norm">depth</b> - максимальная глубина,
+<b class="norm">branches</b> - максимальное число ветвей и
+<b class="norm">cut</b> - вероятность обрыва ветки (<b class="norm">0 &lt; cut &lt; 1</b>).
+При каждом рекурсивном вызове <b class="norm">depth</b> уменьшается, пока не станет равным нулю:
+<pre class="brush: js">
+Tree.rand = function (depth, branches, cut)
+{
+   if(this.count===undefined)                     // статическая переменная
+      this.count = -1;                            // для нумерации узлов
+   this.count++;                                  // следующий узел
+
+   if(depth < 1 || Math.random() < cut)           // обрываем рост дерева по глубине
+      return { nm: this.count};                   // или по вероятности 0 < cut < 1
+
+   var nm = this.count;                           // запоминаем (потомки увеличат)
+   var ar = new Array(1+Math.floor(Math.random()*branches));
+   for(var i=0; i < ar.length; i++)               // рекурсивно для потомков
+      ar[i] = this.rand(depth-1, branches, cut);
+   return  { nm:nm, ar:ar };
+}
+</pre>
+</p>
+<p>
+Получить максимальную глубину дерева tr и количество узлов
+можно при помощи следующих <a href="Recursion.html">рекурсивных</a> функций:
+<div style="overflow:hidden">
+<div style="float:left; width:45%">
+<pre class="brush: js">
+Tree.depth = function (tr)
+{
+   if(!tr.ar || tr.ar.length==0)
+      return  0;
+
+   var max = 0;
+   for(var i=0; i < tr.ar.length; i++){
+      var d = this.depth(tr.ar[i]);
+      if(d > max)
+         max = d;
+   }
+   return max+1;
+}
+</pre>
+</div>
+<div style="float:right; width:45%">
+<pre class="brush: js">
+Tree.numNodes = function (tr)
+{
+   if(!tr.ar || tr.ar.length==0)
+      return  1;
+
+   var sum = 0;
+   for(var i=0; i < tr.ar.length; i++)
+      sum += this.numNodes(tr.ar[i]);
+
+   return 1+sum;
+}
+</pre>
+</div>
+</div>
+</p>
+<p>
+В качестве забавы, найдём среднюю глубину случайного дерева и среднее число узлов на нём (нажмите кнопку <b class="norm">start</b>):<br>
+<form name="form_run2" style="margin:-0.5em 0  0em 0";>
+    depth=<input type="text"   name="d"  value="3"  style="width:1.5em;text-align:center;font-size:1em;">
+    branches=<input type="text"   name="n"  value="4"  style="width:1.5em;text-align:center;font-size:1em;">
+    cut=<input type="text"     name="c"  value="0.1" style="width:2.5em;text-align:center;font-size:1em;">
+    num=<input type="text"     name="num"  value="10000"  style="width:4em;text-align:center;font-size:1em;">
+    <input id="run2_btn_id"  type="button" value="start" onClick="Run2.init()">
+</form>
+<b class="green norm" id="run2_out_id">
+depth: <b class="red">2.64 </b> nodes:  <b class="red">19.65</b> leaves:  <b class="red">12.18 </b>
+</b><br>
+Стоит попробовать вычислить эти параметры теоретически.
+<script>
+function Run2() {}
+Run2.timerID = -1;
+Run2.init = function (){
+   if(this.timerID<0){
+      this.timerID = setInterval(this.calc, 200);
+      document.getElementById("run2_btn_id").value = "stop";
+      this.calc();
+   }
+   else{
+      clearInterval(this.timerID);
+      this.timerID = -1;
+      document.getElementById("run2_btn_id").value = "start";
+   }
+}
+Run2.calc = function (){
+  var start = new Date();
+
+  var sumD = 0, sumN = 0, sumL=0;
+  var depth = Number(document.form_run2.d.value); if(depth<=0) depth=1;              document.form_run2.d.value = depth;
+  var nodes = Number(document.form_run2.n.value); if(nodes<=0) nodes=1;              document.form_run2.n.value = nodes;
+  var cut   = Number(document.form_run2.c.value); if(cut<0) cut=0;  if(cut>1) cut=1; document.form_run2.c.value = cut;
+  var num   = Number(document.form_run2.num.value); if(num<0) num=1;  document.form_run2.num.value = num;
+  for(var i=0; i < num; i++){
+     var t = Tree.rand(depth, nodes, cut);
+     var d = Tree.depth(t), n = Tree.numNodes(t), l = Tree.numLeaves(t);;
+     sumD += d;
+     sumN += n;
+     sumL += l;
+  }
+  sumD/=num; sumN/=num;  sumL/=num;
+  sumD = ""+Math.round(sumD*100)/100; while(sumD.length<4) sumD += "0";
+  sumN = ""+Math.round(sumN*100)/100; while(sumN.length<5) sumN += "0";
+  sumL = ""+Math.round(sumL*100)/100; while(sumL.length<5) sumL += "0";
+
+  document.getElementById("run2_out_id").innerHTML =
+       ' depth:     <b class="red">'  +sumD + '</b>'
+     + ' nodes:     <b class="red">' + sumN + '</b>'
+     + ' leaves:    <b class="red">' + sumL +'</b> '
+     +  'time (ms): <b class="red">'  +(new Date() - start) + '</b>';
+}
+</script>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="parse"></a>
+<h2>Деревья как функции</h2>
+<p>
+В ряде случаев удобнее задавать дерево не структурой,
+а строкой, подобной <b class="norm"><script>document.write(Tree.getFun(test1_tree));</script></b>.
+Имена таких вложенных функций являются узлами дерева, а их аргументы - потомками этих узлов.
+При этом справедлива следующая <a href="http://synset.com/ai/ru/logic/prg_01_parser.html">грамматика</a>:
+<pre>
+   NODE :-  NAME(LIST) | NAME      // узел - это функция или имя листа
+   LIST :-  NODE,LIST  | NODE      // список, это множество узлов через запятую
+</pre>
+Грамматика является набором правил порождения синтаксически верных выражений.
+Она может выдать выражение <b class="norm">f(x,g(h(a),z))</b>,
+но не приведёт к синтаксически неверной записи типа <b class="norm">f(,),(g(h,(a,z)</b>.
+В первой строке утверждается, что  узлом дерева <b class="norm">NODE</b> может быть имя <b class="norm">NAME</b> (для терминальных узлов)
+или функция <b class="norm">NAME(LIST)</b> для нетеминальных.
+Эти две возможности перечисляются через вертикальную черту.
+Вторая строка - определение списка аргументов функции. При этом правило
+<b class="norm">LIST :- NODE,LIST</b> содержит в себе рекурсию (список - это узел <b class="norm">NODE</b>,
+после которого через запятую снова идёт список).
+</p>
+<p>
+Функция <b class="norm">Tree.parse(st)</b> парсит  строку <b class="norm">st</b>,
+выдавая на входе дерево в виде структуры. В ней
+введена статическая переменная <b class="norm">pos</b> указателя на текущее положение
+в анализируемой строке и вызывается первое грамматическое правило:
+<pre class="brush: js">
+Tree.parse = function (st)
+{
+   this.pos = 0;                                  // статическая перемнная положение в st
+   return Tree.parseNODE(st);
+}
+</pre>
+Напишем функции для каждого элемента грамматики.
+Функция <b class="norm">Tree.parseNODE</b> возвращает дерево  <b class="norm">{ nm, ar }</b>.
+Функция <b class="norm">Tree.parseNAME</b>
+даёт строку имени (узла или листа), которым будем считать что угодно, кроме скобок и запятых <b class="norm">"(,)"</b>:<br>
+<div style="overflow:hidden">
+<div style="width:450px; float:left;">
+<pre class="brush: js">
+Tree.parseNODE = function (st)
+{
+   var tr = {nm: this.parseNAME(st) };
+   if(st.charAt(this.pos)==="("){
+      this.pos++;
+      tr.ar = this.parseLIST(st);
+   }
+   return tr;
+}
+</pre>
+</div>
+<div style="width=450px; float:left; ">
+<pre class="brush: js">
+Tree.parseNAME = function (st)
+{
+   var pos1 = this.pos;      // начало имени
+   while(this.pos < st.length
+      && "(,)".indexOf(st.charAt(this.pos)) < 0
+   )
+      this.pos++;
+   return st.substring(pos1, this.pos);
+}
+</pre>
+</div>
+<div style="clear:left"></div>
+</div>
+Метод <b class="norm">st.charAt(i)</b> даёт <b class="norm">i</b>-й символ (начиная от <b class="norm">0</b>) в строке
+(можно также писать <b class="norm">st[i]</b>).
+Метод <b class="norm">s.indexOf(ch)</b> возвращает положение символа <b class="norm">ch</b> в строке <b class="norm">s</b>
+или <b class="norm">-1</b>, если его там нет. Выше при помощи этого метода проверяется наличие в строке
+скобок или запятой.
+Наконец, <b class="norm">st.substring(n1,n2)</b> возвращает подстроку начиная с <b class="norm">n1</b>
+и до (но не включая) <b class="norm">n2</b>.
+</p>
+<p>
+Последняя функция парсинга вычитывает список переменных в "функции":
+<pre class="brush: js">
+Tree.parseLIST = function (st)
+{
+   var lst = [ this.parseNODE(st) ];              // первый элемент списка
+   if(this.pos >= st.length)
+      return lst;                                 // конец строки и списка
+   else if(st.charAt(this.pos)===","){
+      this.pos++;                                 // дошли до запятой
+      return lst.concat(this.parseLIST(st));
+   }
+   else if(st.charAt(this.pos)===")"){
+      this.pos++;                                 // закрывающая скобка, конец списка
+      return lst;
+   }
+   else
+      return lst;                                 // ошибка синтаксиса
+}
+</pre>
+Теперь в html-документе можно написать следующий код:
+<pre class="brush: js">
+&lt;script&gt;
+document.write(Tree.getSVG(   // выводим как svg-картинку
+Tree.parse(                   // получаем дерево из строки
+   "entity("
+      +"object(thing,being(creature(animal,bird,fish,insect),plant),part,group,stuff,space),"
+      +"concept(action,time,attr,mental,sound)"
+   +")"
+)));
+&lt;/script&gt;
+</pre>
+что приведёт к:
+<script>
+Tree.svg.skpY = 60;
+document.write(Tree.getSVG(
+Tree.parse(
+"entity("
+   +"object(thing,being(creature(animal,bird,fish,insect),plant),part,group,stuff,space),"
+   +"concept(action,time,attr,mental,sound)"
++")"
+)));
+Tree.svg.skpY = 30;
+</script>
+</p>
+<p>
+Вместо функции <b class="norm">Tree.getSVG</b> (вывод дерева как svg-картинки),
+можно воспользоваться любой другой функцией:
+<b class="norm">Tree.getFun</b> (в функциональном виде),
+<b class="norm">Tree.getJSON</b> (в JSON-формат), <b class="norm">Tree.getUL</b> (html-список) и
+<b class="norm">Tree.getGIF</b> ("файловая" система).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="gif1"></a>
+<h2>Дерево, как файловая система</h2>
+<p>
+Разберём подробнее функцию <b class="norm">Tree.getGIF</b>,  выводящую дерево, подобно списку файлов и папок на компьютере,
+с возможностью сворачивания веток дерева и иерархической пометкой узлов (покликайте на папках, листиках и плюсиках):
+<div style="overflow:auto; height:17em;  border:2px solid black; padding:5px; border-radius:5px; margin-top:0em;">
+<div id="myTreeID" style="width:200px; float:left;"></div>
+<div style="width:750px; height:50px;  float:right;">
+<center>
+<div id="mySelectID" style="width:740px; height:3em; border: 1px solid black;  border-radius: 5px; color:green;"></div><br>
+<div id="myTree2ID"></div>
+</center>
+</div>
+</div>
+<script>
+//   var myTree = new Tree({ nm:"0", ar:[ {nm:1, ar:[{nm:2, ar:[{nm:3, ar:[{nm:4},{nm:5},{nm:6}]}]}, {nm:7}]}, {nm:8}] });
+var myTree = new Tree();                          // создаём экземпляр класса Tree
+myTree.parse(                                     // помещаем в него дерево, парся его из строки
+   "entity(object(thing,being(creature(animal,bird,fish,insect),plant),part,group,stuff,space))" );
+
+myTree.show = function ()  {                      // функция вывода дерева в div-ке c id=myTreeID
+    document.getElementById("myTreeID").innerHTML = myTree.getGIF("myTree"); // имя объекта!!!
+    Tree.svg.skpY  = 40;                          // сильнее растягиваем вниз
+    Tree.svg.colors = ["#FFC", "#F9F", "#FDF"];   // цвет для непомеченных и помеченных узлов для svg
+    document.getElementById("myTree2ID").innerHTML = myTree.getSVG(); // рисуем как svg-картинку
+    Tree.svg.skpY  = 30;                          // исходное значение
+}
+
+myTree.click = function(n) {                      // функция вызовется при клике на узел n
+    if(n.ar) alert('this is node '+n.nm+' has ' + Tree.numNodes(n) + ' nodes');
+    else     alert('this is leaf '+n.nm);
+}
+
+myTree.select = function(n) {                     // произошло изменение в пометке узлов
+    var arr = myTree.arrProp("chk", 1);           // получить массив узлов с пометкой chk:1
+    var st = "";                                  // список помеченных листьев
+    for(var i=0; i < arr.length; i++)
+       st += arr[i].nm+(i+1 < arr.length? ", ":"");
+    document.getElementById("mySelectID").innerHTML = st;
+}
+
+myTree.getNodes();                                // список всех узлов (нужно сделать один раз)
+myTree.close(2);                                  // закрыть все узлы ниже второго
+myTree.show();                                    // выводим дерево
+</script>
+</p>
+Прежде чем описывать её устройство, приведём пример использования.
+Если от дерева не требуется итерактивности, вставка
+его  в html-страницу делается так:
+<pre class="brush: xml">
+&lt;script&gt;
+   var myTree = {
+      nm:"root",
+      ar:[  { nm:"folder", ar:[{nm: "file1"}] },
+            { nm:"file2" },
+            { nm:"file2" },
+         ]};
+   document.write(Tree.getGIF(myTree));
+&lt;/script&gt;
+</pre>
+Если же нужна динамичность, то необходимо создать экземпляр
+класса <b class="norm">Tree</b> при помощи оператора <b class="norm">new</b>.
+Его имя, как строку, необходимо передать в функцию и задать функцию рисования <b class="norm">show</b>,
+которая вызывается деревом при его изменении.
+Кроме стандартных сворачиваний и разворачиваний узлов (папок), реализована рекурсивная пометка узлов и листьев
+(необходимо кликнуть на папку или лист). Соответствующие пометки
+добавляются в каждый узел дерева свойством <b class="black">chk</b>, равным <b class="norm">1</b>
+или <b class="norm">0</b>. Статической функцией <b class="norm">Tree.arrProp(tr,"chk",1)</b> можно получить массив
+всех выбранных листьев. Кроме этого, непомеченный узел-папки имеет значение
+<b class="norm">chk=2</b>, если хотя бы один его потомок помечен. Если папка
+помечается (<b class="norm">chk=1</b>), то автоматически помечаются все её потомки.
+Если с папки снята пометка, то она снимается и с потомков. При изменении пометки вызывается функция <b class="norm">select</b>, а при клике на имя узла - функция <b class="norm">click</b>:
+<pre class="brush: js">
+var myTree = new Tree();                          // создаём экземпляр класса Tree
+myTree.parse(                                     // помещаем в него дерево, парся его из строки
+   "entity(object(thing,being(creature(animal,bird,fish,insect),plant),part,group,stuff,space))" );
+
+myTree.show = function ()  {                      // функция вывода дерева в div-ке c id=myTreeID
+    document.getElementById("myTreeID").innerHTML = myTree.getGIF("myTree"); // имя объекта!!!
+    Tree.svg.skpY  = 40;                          // сильнее растягиваем вниз
+    Tree.svg.colors = ["#FFC", "#F9F", "#FDF"];   // цвет для непомеченных и помеченных узлов для svg
+    document.getElementById("myTree2ID").innerHTML = myTree.getSVG(); // рисуем как svg-картинку
+    Tree.svg.skpY  = 30;                          // исходное значение
+}
+
+myTree.click = function(n) {                      // функция вызовется при клике на узел n
+    if(n.ar) alert('this is node '+n.nm+' has ' + Tree.numNodes(n) + ' nodes');
+    else     alert('this is leaf '+n.nm);
+}
+
+myTree.select = function(n) {                     // произошло изменение в пометке узлов
+    var arr = myTree.arrProp("chk", 1);           // получить массив узлов с пометкой chk:1
+    var st = "";                                  // список помеченных листьев
+    for(var i=0; i < arr.length; i++)
+       st += arr[i].nm+(i+1 < arr.length? ", ":"");
+    document.getElementById("mySelectID").innerHTML = st;
+}
+
+myTree.getNodes();                                // список всех узлов (нужно сделать один раз)
+myTree.close(2);                                  // закрыть все узлы ниже второго
+myTree.show();                                    // выводим дерево
+</pre>
+</p>
+
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="gif2a"></a>
+<h2>Реализация <b class="norm">getANSII</b> </h2>
+
+<p>  Чтобы  не погрязнуть в дизайнерских изысках,
+нарисуем сначала дерево при помощи псевдографики (ниже первый результат):
+<script>
+    var tree_ansii = {nm:0, ar:[ {nm:1, ar:[{nm:3, ar:[{nm:5, ar:[{nm:6},{nm:7},{nm:8}]}]}, {nm:4}]}, {nm:2}]};
+</script>
+<pre  style="width:200px;  margin-top:0em; line-height:normal; float:left;">
+<script>document.write(Tree.getANSII(tree_ansii));</script>
+</pre>
+<div style="width:200px;  float:left;">
+<script>document.write(Tree.getSVG(tree_ansii));</script>
+</div>
+<div style="width:300px;  float:left;">
+<script>document.write(Tree.getUL(tree_ansii));</script>
+</div>
+<div style="width:200px;  float:left;">
+<script>
+var st = Tree.getGIF(tree_ansii);
+document.write(st);
+</script>
+</div>
+<div style="clear:left;"></div>
+При стартовом запуске статическая функция <b class="norm">Tree.getANSII</b> вызывается без второго праметра <b class="norm">calc</b>
+и возвращает строку, разбитую
+на линии символами возврата каретки (<b class="norm">"\n"</b>).
+Если параметр <b class="norm">clac=true</b> (при рекурсивных вызовах), то функция
+возвращает массив строк отображения данного узла:
+<pre class="brush: js">
+Tree.getANSII = function (tr, calc)
+{
+   if(!calc){                                     // первый запуск (не рекурсия)
+      var st  = "";
+      var lst = this.getANSII(tr, true);          // получаем массив строк, котрые
+      for(var i=0; i < lst.length; i++)           // сворачиваем в одну стрку
+         st += lst[i]+"\n";                       // перевод каретки - для &lt;pre&gt;
+      return st;
+   }
+
+   if(!tr.ar || tr.ar.length===0)                 // это лист, возвращаем только имя
+      return ["-"+tr.nm];
+
+   var lst = [];                                  // список строк, который вернёт узел
+   lst.push("-" + tr.nm);
+   for(var i=0; i < tr.ar.length; i++){           // по всем потомкам
+      var nxt = this.getANSII(tr.ar[i], true);    // получаем массив строк потомка
+      for(var j=0; j < nxt.length; j++){          // добавляем его в массив этого узла
+         var ch = "   ";                          // линии, соединяющие узлы
+         if(j===0){                               // первая строка (с именем потомка)
+            if(i+1 !== tr.ar.length)              // не последний потомок
+               ch = tr.ar[i].ar? " +-": " |-";    // " + " для папки и " |-" для листа
+            else                                  // последний потомок
+               ch = tr.ar[i].ar? " +-": " L-";    // тоже, но нет линии вниз
+         }
+         else if(i+1 !== tr.ar.length)            // соединительная линия вниз
+            ch = " | ";
+
+         lst.push(ch+nxt[j]);
+      }
+   }
+   return lst;
+}
+</pre>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="gif2"></a>
+<h2>Реализация <b class="norm">getGIF</b> </h2>
+
+<p>
+Теперь можно модифицировать функцию <b class="norm">getANSII</b> для рисования красивого дерева.
+Оределим классы стилей:
+<pre class="brush:css">
+.tree {
+   font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+   font-size: 12px;          /* размер шрифта */
+   line-height:normal;       /* если в документе была изменена */
+   white-space: nowrap;      /*  перевод строки никогда не будет вставлен */
+   overflow: auto;           /* при переполнении полоса прокрутки */
+}
+.tree .block {
+   display:block;            /* div-ки прижимаются друг к другу снизу */
+}
+.tree img {
+   border: 0px;
+   vertical-align: middle;   /* картинки центрируются по веритикали */
+}
+</pre>
+При наличии квадратных картинок (18px):<br>
+<b class="norm">p111.gif</b>: <img src="../../_im/_p111.gif"/>,
+<b class="norm">p110.gif</b>: <img src="../../_im/_p110.gif"/>,
+<b class="norm">l101.gif</b>: <img src="../../_im/_l101.gif"/>,
+<b class="norm">l111.gif</b>:<img src="../../_im/_l111.gif"/>
+<b class="norm">l110.gif</b>:<img src="../../_im/_l110.gif"/>
+<b class="norm">flop.gif</b>: <img src="../../_im/_flop.gif"/>,
+<b class="norm">page.gif</b>: <img src="../../_im/_page.gif"/>.
+</p>
+<p>
+следующий html-код:
+<pre class="brush:xml">
+&lt;div class="tree"&gt;
+   &lt;div class="blk"&gt;
+      &lt;img src="p111.gif"/&gt;&lt;img src="flop.gif"/&gt;root&lt;/div&gt;
+   &lt;div class="blk"&gt;
+      &lt;img src="l101.gif"/&gt;&lt;img src="p110.gif"/&gt;&lt;img src="flop.gif"/&gt;folder&lt;/div&gt;
+   &lt;div class="blk"&gt;
+      &lt;img src="l101.gif"/&gt;&lt;img src="empt.gif"/&gt;&lt;img src="l110.gif"/&gt;&lt;img src="page.gif"/&gt;file1&lt;/div&gt;
+   &lt;div class="blk"&gt;
+      &lt;img src="l111.gif"/&gt;&lt;img src="page.gif"/&gt;file2&lt;/div&gt;
+   &lt;div class="blk"&gt;
+      &lt;img src="l110.gif"/&gt;&lt;img src="page.gif"/&gt;file3&lt;/div&gt;
+&lt;/div&gt;
+</pre>
+приведёт к вполне себе симпатичному  дереву:
+<div class="tree" style="margin-top:1em; margin-left:3em;">
+<div class="blk"><img src="../../_im/_p111.gif"/><img src="../../_im/_flop.gif"/>root</div>
+<div class="blk"><img src="../../_im/_l101.gif"/><img src="../../_im/_p110.gif"/><img src="../../_im/_flop.gif"/>folder</div>
+<div class="blk">
+   <img src="../../_im/_l101.gif"/><img src="../../_im/_empt.gif"/><img src="../../_im/_l110.gif"/><img src="../../_im/_page.gif"/>
+   file1
+</div>
+<div class="blk"><img src="../../_im/_l111.gif"/><img src="../../_im/_page.gif"/>file2</div>
+<div class="blk"><img src="../../_im/_l110.gif"/><img src="../../_im/_page.gif"/>file3</div>
+</div>
+Именно эти div-ки и img-ы необходимо вставить в функции <b class="norm">Tree.getANSII</b> для получения функции <b class="norm">Tree.getGIF</b>
+рисования дерева при помощи gif-ок.
+</p>
+<p>
+Чтобы придать динамичности дереву из gif-ок, добавляются ссылки на картинки и назавания узлов. Так для картинок
+с плюсиками надо написать:
+<pre class="brush: xml">
+&lt;a href="javascript: alert(!);"> &lt;img src="_p111.gif"/>&lt;/a>
+</pre>
+Дальнейшие детали можно найти в исходниках.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="svg"></a>
+<h2>Графическое svg-представление</h2>
+<p>
+"Традиционное" рисование дерева в  виде куста, растущего вниз, реализовано в функции <b class="norm">getSVG</b>.
+Она выводит дерево в виде текста - описания svg-файла. Его можно просто вствить в html-документ.
+Для настройки отображения дерева в svg-формате  служит следующая структура:
+<pre class="brush: js">
+Tree.svg = {
+   h    : 20,             // высота ящика для узла
+   w    : 20,             // минимальная ширина ящика для узла
+   chW  : 10,             // ширина буквы
+   skpY: 30,              // отступить от имени узла
+   skpX: 10,              // отступить от соседнего узла влево
+   cFill: "#FFFFCC",      // цвет заливки
+   cText: "blue",         // цвет текста
+   cLine: "black",        // цвет линий
+   bound: false,          // показывать ограничивающие ящики
+   colors: [],            // массив цветов заливки ящиков по номеру свойства chk узла
+};
+</pre>
+Если узел дерева имеет пометку <b class="norm">vis==false</b>, то он не рисуется вместе со всеми потомками.
+При пометке  <b class="norm">hide==true</b> узел не рисуется, но пространство под него выделяется
+(не сжимается, как это происходит при <b class="norm">vis==false</b>).
+В зависимости от значения пометки <b class="norm">chk=0,1,...</b>
+и наличия массива <b class="norm">Tree.svg.colors</b>, можно раскрашивать узлы дерева в различные цвета.
+</p>
+<p>
+С деталями реализации функции <b class="norm">getSVG</b> можно разобраться по <a href="../../_js/tree.js">исходникам</a>,
+которые достаточно хорошо задокументированы.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="ref"></a>
+<h2>Справочник</h2>
+<p>
+Для работы с деревьями, необходимо подключить два модуля: <b class="norm">tree.js</b> и <b class="norm">draw.js</b>
+(графическое отображение).
+</p>
+
+<p>
+Функции отображения дерева <b class="norm">tr</b>:
+<ul>
+<li><b class="blue2">getJSON</b><b class="black">(tr)</b> -  в JSON-формате;</li>
+<li><b class="blue2">getFun</b><b class="black">(tr)</b> -  в функциональном виде типа: <b class="norm">node(n1,n2)</b>;</li>
+<li><b class="blue2">getUL</b><b class="black">(tr)</b> -  в виде html-перечислений ul-li;</li>
+<li><b class="blue2">getSVG</b><b class="black">(tr)</b> - графическое представление  в svg-формате;</li>
+<li><b class="blue2">getANSII</b><b class="black">(tr)</b> - в символах псевдографики;</li>
+<li><b class="blue2">getGIF</b><b class="black">(tr, name)</b> - подобно файловой структуре, помощи картинок и css;
+ если параметр <b class="norm">name</b> есть, он равен имени объекта <b class="norm">Tree</b>, создаваемого по <b class="norm">new</b>
+ (для обработки интерактивного поведения);</li>
+ <li><b class="blue2">getNodes</b><b class="black">()</b> -
+получить список всех узлов дерева и присовить им <b class="norm">id</b> в этом массиве,
+установить поля <b class="norm">vis,opn,chk</b>;</li>
+ <li><b class="blue2">close</b><b class="black">(depth)</b> - для вывода функцией <b class="norm">getGIF</b> закрыть все узлы глубже <b class="norm">depth</b></li>
+</ul>
+Параметры дерева <b class="norm">tr</b>:
+<ul>
+<li><b class="blue2">depth</b><b class="black">(tr)</b> - получить максимальную глубину дерева ;</li>
+<li><b class="blue2">numNodes</b><b class="black">(tr)</b> - получить количество узлов дерева <b class="norm">tr</b>;</li>
+<li><b class="blue2">numLeaves</b><b class="black">(tr)</b> - получить количество листьев дерева <b class="norm">tr</b>;</li>
+</ul>
+Обработка и создание деревьев:
+<ul>
+<li><b class="blue2">copy</b><b class="black">(tr)</b> - создать копиию дерева <b class="norm">tr</b>;</li>
+<li><b class="blue2">set</b><b class="black">(tr, par, val, depth)</b> - установить свойство <b class="norm">par</b> в значение <b class="norm">val</b> для всего дерева <b class="norm">tr</b>,
+не более чем на глубину <b class="norm">depth</b>;</li>
+<li><b class="blue2">setNm</b><b class="black">(tr, par, val, nm)</b> - установить свойство <b class="norm">par</b> в значение <b class="norm">val</b> для узлов дерева <b class="norm">tr</b>, имеющих имя узла равное <b class="norm">nm</b>;</li>
+<li><b class="blue2">arrProp</b><b class="black">(tr, prop, val)</b> - получить массив узлов дерева <b class="norm">tr</b>, имеющих свойство <b class="norm">prop</b> в значении <b class="norm">val</b>;</li>
+<li><b class="blue2">create</b><b class="black">(depth, branches)</b> - вернуть дерево глубиной <b class="norm">depth</b> c <b class="norm">branches</b> ветвями в каждом узле;</li>
+<li><b class="blue2">rand</b><b class="black">(depth, branches, cut)</b> - вернуть случайное дерево максимальной глубиной <b class="norm">depth</b> и <b class="norm">branches</b> ветвями, с вероятностью обрыва <b class="norm">cut</b>;</li>
+<li><b class="blue2">calc</b><b class="black">(tr, fun)</b> - Вызвать функицю <b class="norm">fun(tr)</b> для каждого узла дерева;</li>
+</ul>
+Разное:
+<ul>
+<li><b class="blue2">parse</b><b class="black">(st)</b> - получить дерево из строки st, задащей дерево в функциональной форме
+<b class="norm">root(node1(leaf1,leaf2),leaf3)</b>;</li>
+</ul>
+
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Приоритетная очередь", "Queue.html",  "Графы", "Graphs.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Trees.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:13 GMT -->
+</html>

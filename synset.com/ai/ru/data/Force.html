@@ -1,0 +1,1303 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Force.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:12:49 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Метод грубой силы</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>       <!-- рисование  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- деревья -->
+<script type="application/javascript"   src="../../_js/graph.js"></script>      <!-- графы -->
+<script type="application/javascript"   src="../../_js/plot.js"></script>       <!-- графики -->
+<script type="application/javascript"   src="../../_js/salesman.js"></script>   <!-- задача коммивояжёра -->
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Метод грубой силы</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#greedy0">Задача коммивояжёра</a></li>
+   <li><a href="#greedy1">Генерация перестановок</a></li>
+   <li><a href="#greedy2">Запускаем перебор</a></li>
+   <li><a href="#greedy3">Не рекурсивный способ</a></li>
+   <li><a href="#greedy4">Создаём таймер</a></li>
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#greedy5a">Воспроизводимые случайные числа</a></li>
+   <li><a href="#greedy5">Матрица расстояний</a></li>
+   <li><a href="#greedy5a">Рисуем на канвасе</a></li>
+   <li><a href="#greedy6">Перебор в таймере</a></li>
+   <li><a href="#greedy7">Результат</a></li>
+</ul>
+</div>
+</div>
+</p>
+
+
+<!--------------------------------------------------------------------------------------->
+<script>
+var dists = [
+    [            ], // 0
+    [5           ], // 1
+    [8, 3        ], // 2
+    [9, 3, 7     ], // 3
+    [2, 4, 6, 1  ], // 4
+];
+for(var j=0; j < dists.length; j++){
+   dists[j][j]=-1;
+   for(var i=j+1; i < dists.length; i++)
+      dists[j][i]=dists[i][j];
+}
+//document.write(dists, '<br>');
+function showDists(tbl, dists)
+{
+   var n = dists.length;                          // число городов
+
+   tbl.innerHTML="";                              // очищаем таблицу
+   for(var i = 0; i <= n; i++){                   // создаём таблицу (n+1)x(n+1)
+      tbl.appendChild(document.createElement('tr'));
+      for(var j = 0; j <= n; j++)
+         tbl.rows[i].appendChild(document.createElement('td'));
+   }
+
+   for(var k = 1; k <= n; k++){                   // первая строка (заголовок)
+      tbl.rows[0].cells[k].innerHTML = k-1;       // содержание ячейки и её стиль
+      tbl.rows[0].cells[k].style = "border-bottom: 1px solid black";
+   }
+
+   for(var j = 1; j <= n; j++){
+      tbl.rows[j].cells[0].innerHTML = j-1        // первая колонка и её стиль
+      tbl.rows[j].cells[0].style = "border-right: 1px solid black";
+      for(var i = 1; i <= n; i++)                 // собственно расстояния
+         tbl.rows[j].cells[i].innerHTML = (i!==j? dists[j-1][i-1].toFixed(0): "-")
+   }
+}
+
+function fac(n)
+{
+   if( n < 2 ) return 1;                          // защита от отрицательных чисел
+
+   var res = n;                                   // возвращаемое значение
+   while( --n )                                   // пока (n = n-1) > 0
+      res *= n;                                   // перемножаем числа: res=res*n
+   return res;                                    // возвращаем результат
+}
+
+// Linear Congruential Generator http://en.wikipedia.org/wiki/Numerical_Recipes
+// https://jsperf.com/native-and-non-native-random-numbers/10
+var lcg = (function() {
+     var z=1, a=1664525, b=1013904223, m = 4294967296; // = 2^32
+  return {
+     seed   : function(val)   { z = val || Math.round(Math.random() * m); },
+     rand   : function(bound) { return (z = (a*z + b) % m) % bound; },
+     random : function()      { return (z = (a*z + b) % m) / m; }
+  };
+}());
+
+</script>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy0"></a>
+<h2>Задача коммивояжёра</h2>
+
+<p>
+<div style="float:right; margin-left:5px;  width:180px;">
+<center>
+<script>
+var graph = new Graph();
+graph.create(5, 75);
+graph.fullConnect();
+for(var k=graph.nodes.length; k--; ){
+   var go = graph.nodes[k].go;
+   var d = graph.nodes[k].d = new Array(go.length);
+   for(var i=0; i < go.length; i++)
+      d[i] = dists[k][go[i]];
+}
+Graph.svg.sDist = 12;
+document.write(graph.getSVG());
+</script>
+</center>
+</div>
+Есть <b class="norm">N</b> городов, соединённых между собой дорогами.
+Между ними необходимо проложить кратчайший замкнутый маршрут, проходящий через каждый город только один раз.
+Справа нарисован <a href="Graphs.html">граф</a>, состоящий из пяти  узлов (городов),
+соединённых рёбрами (дорогами). Длины дорог приведены рядом с ребрами.
+Это <i>полносвязный граф</i>, в котором каждый узел соединён с любым другим.
+Рёбра графа ненаправленные
+и перемещение по ним от узла к узлу возможно в любом направлении.
+Обозначим расстояние между городами <b class="norm">i</b> и <b class="norm">j</b>
+через <b class="norm">D<sub>ij</sub></b>. Обычно предполагается, что:
+<pre>
+                                  D<sub>ij</sub> &ge; 0,          D<sub>ij</sub> = D<sub>ji</sub>.
+</pre>
+</p>
+<p>
+Вообще говоря, <b class="norm">D<sub>ij</sub></b> - не обязательно "физическая длина" дороги.
+Это может быть время перемещения, стоимость билета или произвольно заданное неотрицательное число.
+Тем не менее, во всех этих случаях,  <b class="norm">D<sub>ij</sub></b>  будет называться  расстоянием.
+</p>
+<p>
+<div style="float:right; margin-left:5px; width:180px;">
+<style>
+table.em1 tr td { margin:0px; width:1em; }
+</style>
+<table id="tblStartID" class="norm center em1"></table>
+<script>
+showDists(document.getElementById('tblStartID'), dists);
+</script>
+</div>
+Запишем расстояния между городами в виде  матрицы (таблица справа).
+Например, расстояние из города <b class="norm">2</b> в город
+<b class="norm">3</b>  (и из <b class="norm">3</b> в <b class="norm">2</b>)
+равно
+<b class="norm"><script>document.write(dists[2][3])</script></b>.
+Так как граф ненаправленный, эта матрица симметрична.
+Прочерками отмечены "запрещённые" переходы из города в него же.
+</p>
+<p>
+Искомый путь замкнут, поэтому любой город можно выбрать в качестве начального
+(и конечного). Пусть таковым будет нулевой город.
+Тогда любая перестановка чисел от <b class="norm">1</b> до <b class="norm">4</b>, окруженная нулями, символизирует
+некоторый путь, проходящий через каждый город один раз.
+Например, <b class="norm">0,1,3,2,4,0</b>, означает, что стартуя из города <b class="norm">0</b>,
+мы перемещаемся в город <b class="norm">1</b>, затем в город <b class="norm">3</b> и т.д.
+На последнем  шаге из города <b class="norm">4</b> возвращаемся в стартовую точку - город <b class="norm">0</b>.
+Длина этого пути равна <b class="norm">5+3+7+6+2 = 23</b> и он
+ не самый короткий. В данном случае
+есть две перестановки длиной <b class="norm">17</b>.
+Это <b class="norm">0,2,1,3,4,0</b> и <b class="norm">0,4,3,1,2,0</b>.
+На самом деле это один и тот же путь, который проходится в "прямом" или "обратном" направлении.
+Подобные перестановки, отличающиеся обращением пути, считаются тождественными.
+В дальнейшем финальный город будет опускаться и подразумевается, что он всегда совпадает со стартовым.
+Таким образом, на приведенном выше графе существует единственное оптимальное решение
+<b class="norm">0,2,1,3,4</b> с длиной пути равной <b class="norm">17</b>.
+</p>
+<p>
+Пусть один из <b class="norm">N</b> городов фиксирован. Тогда остальные <b class="norm">N-1</b>
+городов можно переставить <b class="norm">(N-1)!</b> способами.
+Половина из них является обращением пути (циклической перестановкой).
+Поэтому существует <b class="norm">(N-1)!/2</b> вариантов различных  путей,
+среди которых необходимо найти хотя бы один путь минимальной длины.
+</p>
+<p>
+Если расстояния между любыми тремя городами <b class="norm">i,j</b> и <b class="norm">k</b>
+удовлетворяют <i>неравенству треугольника</i>:
+<pre>
+                                        D<sub>ij</sub> + D<sub>jk</sub>  &ge; D<sub>ik</sub>,
+</pre>
+задачу коммивояжёра называют <i>метрической</i>. Её частным случаем является задача соединения замкнутой ломаной линией точек на плоскости ("дороги" между
+городами считаются прямыми с евклидовым расстоянием в качестве их длины). Ниже приведены решения такой задачи для 20 и 50 городов:
+<center>
+<script>
+man = new Salesman(20);
+man.create(256, 256, 2, lcg);
+man.minWay =[
+6,5,4,13,19,1,9,10,16,0,15,18,3,12,2,14,7,17,8,11
+];
+document.write(man.getSVG());
+document.write("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;");
+man = new Salesman(50);
+man.create(256, 256, 2, lcg);
+man.minWay =[
+1,27,21,24,13,19,6,11,5,8,17,4,33,25,38,43,37,26,45,7,36,14,2,12,47,3,32,28,18,30,15,0,42,23,31,48,34,46,39,16,49,20,41,10,29,40,35,9,22,44
+];
+man.noNames = true;
+//dist: 1566, path: time: 2024 ms, total: 62514 ms, open = 18
+document.write(man.getSVG());
+</script>
+
+</center>
+</p>
+<p>
+Факториал в выражении <b class="norm">(N-1)!/2</b> растёт очень быстро и уже при <b class="norm">N &gt; 15</b> перебрать
+все пути проблематично. Поэтому задача коммивояжёра служит хорошей моделью для
+тестирования непереборных алгоритмов, обладающих "зачатками интеллекта".
+Эти алгоритмы содержат те или иные эвристические соображения, делающие поиск решения
+более направленным (осмысленным). Однако в этом документе рассматривается метод "грубой силы", т.е. перебор.
+В дальнейшем мы неоднократно вернёмся к задаче коммивояжёра.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy1"></a>
+<h2>Генерация перестановок</h2>
+
+
+<p>
+<div style="overflow:hidden">
+<div style="float:left; width:850px;">
+Напишем рекурсивную функцию, создающую  перестановки <b class="norm">n</b> чисел.
+Решим чуть более общую задачу: переставим всеми возможными способами элементы массива, начиная с
+индекса <b class="norm">lf</b> и вправо от него.
+Для этого, поочерёдно поставим на место элемента <b class="norm">ar[lf]</b> все элементы <b class="norm">ar[i]</b>
+c <b class="norm">i &ge; lf</b> (переставляя их местами)
+и рекурсивно повторим  действия для массива меньшего размера, начиная с индекса <b class="norm">lf+1</b>:
+<pre class="brush: js">
+function perm(ar, lf)
+{
+   if(lf >= ar.length){                           // перестановки окончены
+      print(ar, dist(ar, dists));                 // выводим перестановку
+      return;
+   }
+
+   perm(ar, lf+1);                                // перестановки элементов справа от lf
+   for(var i=lf+1; i < ar.length; i++){           // теперь каждый элемент ar[i], i > lf
+      swap(ar, lf, i);                            // меняем местами с ar[lf]
+      perm(ar, lf+1 );                            // и снова переставляем всё справа
+      swap(ar, lf, i);                            // возвращаем элемент ar[i] назад
+   }
+}
+</pre>
+Функция <b class="norm">dist</b> в дальнейшем будет вычислять длину пути по матрице расстояний <b class="norm">dists</b>.
+Сам путь и его длина выводятся функцией <b class="norm">print</b>.
+Третья вспомогательная функция <b class="norm">swap</b> переставляет <b class="norm">ar[i]</b> и <b class="norm">ar[j]</b>
+местами:
+<pre class="brush: js">
+function dist (ar, dists){ return 0; }
+function print(ar, d)    { document.write(ar, '<br>'); }
+function swap (ar, i, j) { var a=ar[i]; ar[i]=ar[j]; ar[j]=a; }
+</pre>
+Протестируем функцию <b class="norm">perm</b>, написав следующий код (результат его работы приведен справа):
+<pre class="brush: js">
+var ar = [1,2,3,4];                               // массив из 4-х элементов
+perm(ar, 0);                                      // запускаем перебор перестановок
+</pre>
+</div>
+<div style="float:right">
+<pre class="outJS">
+<script>
+function dist (ar, dists){ return 0; }
+function print(ar, d)    { document.write(ar, '<br>'); }
+function swap (ar, i, j) { var a=ar[i]; ar[i]=ar[j]; ar[j]=a; }
+
+function perm(ar, lf)
+{
+   if(lf >= ar.length){                           // перестановки окончены
+      print(ar, dist(ar, dists));                 // выводим перестановку
+      return;
+   }
+
+   perm(ar, lf+1);                                // переставляем всё справа от lf
+   for(var i=lf+1; i < ar.length; i++){           // теперь все элементы справа от ar[lf]
+      swap(ar, lf, i);                            // ставим на место ar[lf]
+      perm(ar, lf+1 );                            // переставляем снова всё справа
+      swap(ar, lf, i);                            // возвращаем элемент назад
+   }
+}
+
+var ar = [1,2,3,4];                               // массив из 4-х элементов
+perm(ar, 0);                                      // запускаем перебор
+</script>
+</pre>
+</div>
+</div>
+Теперь перейдём к вычислению расстояния.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy2"></a>
+<h2>Запускаем перебор</h2>
+
+<p>
+Определим массив <b class="norm">dists[j][i]</b> расстояний между городами <b class="norm">j</b> и <b class="norm">i</b>.
+Для простоты, будем задавать  расстояния только в одну сторону, а обратные
+расстояния установим в цикле:
+<pre class="brush: js">
+var dists = [
+    [          ], // 0
+    [5         ], // 1
+    [8, 3      ], // 2
+    [9, 3, 7   ], // 3
+    [2, 4, 6, 1], // 4
+];
+for(var j=0; j < dists.length; j++){              // бежим по строкам вниз
+   dists[j][j]=-1;                                // диагональные элементы
+   for(var i=j+1; i < dists.length; i++)          // вправо от диагонали
+      dists[j][i]=dists[i][j];                    // заполняем "дырки" в матрице
+}
+</pre>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Двумерный массив
+</div>
+Элементами массива <b class="norm">dists</b> являются <b class="norm">5</b>
+массивов. Поэтому, например, <b class="norm">dists[4]</b> - это пятый массив (нумерация идёт с нуля),
+а его второй элемент (равный <b class="norm">4</b>) - это <b class="norm">dists[4][1]</b>.
+Таким образом получился двумерный массив. Отметим также, что
+при задании значения элемента массива за пределами его длины, он (массив) автоматически увеличивает свою длину.
+Например, если <b class="blue2">var</b> <b class="norm">ar = [];</b> (пустой массив нулевой длины) и затем <b class="norm">ar[2]=1</b>,
+то теперь <b class="norm">ar.length</b> становится равной <b class="norm">3</b>.
+<!---
+<script>
+var aaa = [];
+document.write(aaa," len=",aaa.length,'<br>');
+aaa[4]=1;
+document.write(aaa," len=",aaa.length,'<br>');
+aaa[5]=undefined;
+document.write(aaa," len=",aaa.length,'<br>');
+</script>
+--->
+</p>
+<p>
+<div style="float:right; margin-top:-1em;">
+<pre class="outJS">
+<script>
+function dist(ar, dists)
+{
+   var d = dists[0][ar[0]] + dists[ar[ar.length-1]][0];// начало и конец
+   for(var i=1; i < ar.length; i++)
+      d += dists[ar[i-1]][ar[i]];                 // между ar[i-1] и ar[i]
+   return d;                                      // длина пути перестановки ar
+}
+
+function print(ar, d){ document.write(ar, ' dist='+d+'<br>'); }
+
+ar = new Array(dists.length);                     // перестановки городов 1,...,n-1
+for(var i = 0; i < ar.length; i++) ar[i]=i;       // ar = [0, 1, 2, ...]
+
+perm(ar, 1);                                      // запускаем перебор перестановок
+</script>
+</pre>
+</div>
+Осталось  переопределить функцию вычисления длины пути <b class="norm">dist</b> и запустить перебор (результат которого приведен справа):
+<div style="width:800px;">
+<pre class="brush: js">
+function dist(ar, dists)
+{
+   var d = dists[0][ar[0]] + dists[ar[ar.length-1]][0]; // начало и конец
+   for(var i=1; i < ar.length; i++)
+      d += dists[ar[i-1]][ar[i]];                 // между ar[i-1] и ar[i]
+   return d;                                      // длина пути перестановки ar
+}
+
+function print(ar, d){ document.write(ar, ' dist='+d+'<br>'); }
+
+ar = new Array(dists.length);                     // перестановки городов 1,...,n-1
+for(var i = 0; i < ar.length; i++) ar[i]=i;       // ar = [0, 1, 2, ...]
+
+perm(ar, 1);                                      // запускаем перебор перестановок
+</pre>
+</div>
+</p>
+<p>
+Рекурсивный способ перебора всех путей (перестановок чисел) достаточно прост.
+Однако для больших <b class="norm">N</b>, поиск оптимального решения занимает очень много времени,
+html - страница будет "подвисать", а мы не увидим процесса вычислений.
+Поэтому, создадим  нерекурсивную функцию получения перестановок,
+а затем, "включим" таймер, и в каждом его "тике" будем проводить только
+часть вычислений, выводя  промежуточные результаты поиска кратчайшего пути.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy3"></a>
+<h2>Не рекурсивный способ</h2>
+
+<p>
+Будем порождать перестановки в <i>лексикографическом порядке</i>.
+Например: <b class="norm">(1,2,3)</b> <b class="norm">(1,3,2)</b>
+<b class="norm">(2,1,3)</b> <b class="norm">(2,3,1)</b> <b class="norm">(3,1,2)</b> <b class="norm">(3,2,1)</b>.
+Этот порядок означает,
+что перестановка <b class="norm">(a<sub>1</sub>,a<sub>2</sub>,...,a<sub>n</sub>)</b> <i>меньше</i> перестановки
+<b class="norm">(b<sub>1</sub>,b<sub>2</sub>,...,b<sub>n</sub>)</b>,
+если существует такое <b class="norm">k &ge; 1</b>, что
+все <b class="norm">a<sub>i</sub> == b<sub>i</sub></b> для <b class="norm">i &lt; k</b>
+и <b class="norm">a<sub>k</sub> &lt; b<sub>k</sub></b>.
+Другими словами начала перестановок совпадают и меньше та, у которой меньше первое не совпадающее число.
+</p>
+<div style="overflow:hidden; margin-top:-1.5em;">
+<div style="float:left; width:850px;">
+<p>
+<i>Алгоритм</i> генерации перестановок в лексикографическом порядке следующий.
+Начинаем с последовательности <b class="norm">(1,2,...,n)</b>.
+На каждом шаге, предыдущую перестановку <b class="norm">(a<sub>1</sub>,a<sub>2</sub>,...,a<sub>n</sub>)</b>
+просматриваем справа налево и ищем самый правый <b class="norm">a<sub>k</sub></b>, меньший следующего за ним:
+<b class="norm">a<sub>k</sub> &lt; a<sub>k+1</sub></b>.
+Затем находим наименьшее число <b class="norm">a<sub>j</sub></b>, стоящее справа от <b class="norm">a<sub>i</sub></b> (и большее его).
+Эти два числа переставляем местами и
+после этого переворачиваем последовательность чисел <b class="norm">(a<sub>i+1</sub>,...,a<sub>n</sub>)</b>.
+</p>
+<p>
+Справа приведены перестановки четырёх чисел. Красным отмечено число <b class="norm">a<sub>i</sub></b>,
+а синим - <b class="norm">a<sub>j</sub></b>.
+С отступом выведен результат их перестановки (очевидно, что число в лексикографическом смысле стало больше, т.к.
+до перестановки <b class="norm">a<sub>i</sub> &lt; a<sub>j</sub></b>).
+Затем, всё правее красной цифры переворачивается и оказывается упорядоченным по возрастанию.
+Тем самым получается не просто лексикографически большая перестановка, а минимально большая (следующая).
+</p>
+<p>
+Перейдём к реализации этого алгоритма.
+Введём  функцию, которая генерит одну (следующую) перестановку
+и возвращающую <b class="blue2">true</b>, если перестановки не закончились и <b class="blue2">false</b>, если  закончились.
+В дальнейшем массив <b class="norm">ar</b> будет содержать номера городов вдоль пути коммивояжёра.
+Поэтому будем переставлять числа в массиве, начиная с первого, а не нулевого элемента (там будет город <b class="norm">0</b>).
+В общем случае, кроме массива <b class="norm">ar</b> в функцию передаётся номер первого <b class="norm">lf</b>
+элемента массива, который участвует в перестановке:
+<pre class="brush: js">
+function permNxt(ar, lf)
+{
+   var  rt=ar.length-1, i=rt-1;
+   while( i >= lf && ar[i] >= ar[i+1]) i--;       // ищем справа ar[i] < ar[i+1]
+   if(i < lf)                                     // такого нет?
+      return false;                               // перестановки окончены
+
+   var j = rt;                                    // ищем ar[j],
+   while(ar[i] >= ar[j]) j--;                     // наименьший справа от ar[i]
+   swap(ar, i, j);                                // переставляем их местами
+
+   var lf = i+1;                                  // переворачиваем последовательность
+   while(lf < rt)
+      swap(ar, lf++, rt--);
+
+   return true;                                   // перестановки не закончились
+}
+</pre>
+</p>
+<p>
+Протестируем эту функцию:
+<pre class="brush: js">
+var ar = [1,2,3,4];                               // массив из 4-х элементов
+
+do   { document.write(ar, '<br>'); }              // печатаем массив
+while( permNxt(ar, 0) );                          // пока есть перестановка
+</pre>
+</p>
+
+</div>
+
+<div style="float:right">
+<pre class="outJS">
+<script>
+
+function prn(ar, ai, aj, prx)
+{
+   document.write(prx);
+   for(var k=0; k < ar.length; k++){
+      if(ar[k]===ai) document.write('<b class="red">');
+      if(ar[k]===aj) document.write('<b class="blue">');
+      document.write(ar[k]);
+      if(ar[k]===ai || ar[k]===aj) document.write('</b>');
+      if(k < ar.length-1) document.write(',');
+   }
+   document.write('<br>')
+}
+
+function swap(ar, i, j)                           // перестановка ar[i] и ar[j] местами
+{
+   var a = ar[i]; ar[i]=ar[j]; ar[j]=a;
+}
+
+function permNxt1(ar, lf)
+{
+   var rt=ar.length-1, i=rt-1;
+   while( i >= lf && ar[i] >= ar[i+1]) i--;       // ищем справа ar[i] < ar[i+1]
+   if(i < lf)                                     // такого нет?
+      return false;                               // перестановки окончены
+
+   var j = rt;                                    // ищем ar[j],
+   while(ar[i] >= ar[j]) j--;                     // наименьший справа от ar[i]
+
+   prn(ar, ar[i], ar[j], "");
+   swap(ar, i, j);                                // переставляем их местами
+   prn(ar, ar[i], ar[j], "   ");
+
+
+   var lf = i+1;                                  // переворачиваем последовательность
+   while(lf < rt)
+      swap(ar, lf++, rt--);
+
+   return true;                                   // перестановки не закончились
+}
+
+
+function permNxt(ar, lf)
+{
+   var  rt=ar.length-1, i=rt-1;
+   while( i >= lf && ar[i] >= ar[i+1]) i--;       // ищем справа ar[i] < ar[i+1]
+   if(i < lf)                                     // такого нет?
+      return false;                               // перестановки окончены
+
+   var j = rt;                                    // ищем ar[j],
+   while(ar[i] >= ar[j]) j--;                     // наименьший справа от ar[i]
+   swap(ar, i, j);                                // переставляем их местами
+
+   var lf = i+1;                                  // переворачиваем последовательность
+   while(lf < rt)
+      swap(ar, lf++, rt--);
+
+   return true;                                   // перестановки не закончились
+}
+
+var ar = [1,2,3,4];                               // массив из 4-х элементов
+while(permNxt1(ar, 0))
+   ;
+document.write(ar);
+/*
+do   { document.write(ar, '<br>'); }              // печатаем массив
+while( permNxt(ar, 0) );                          // пока получаем новую перестановку
+*/
+</script>
+</pre>
+</div>
+</div>
+
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+Цикл <b class="blue2">do</b> ... <b class="blue2">while</b>
+</div>
+Перестановки выводятся в цикле
+<b class="blue2">do</b><b class="norm">{ ... }</b> <b class="blue2">while</b><b class="norm">(условие)</b>.
+Он похож на цикл <b class="blue2">while</b><b class="norm">(условие){ ... }</b>,
+однако первая итерация выполняется в любом случае, независимо от истинности
+<b class="norm">условия</b>. Следующая итерация будет проведена, если <b class="norm">условие</b>
+(проверяемое после предыдущей итерации) оказывается истинным.
+Благодаря использованию такого цикла, сначала выводится стартовая последовательность <b class="norm">1,2,3,4</b>,
+а затем в функции <b class="norm">permNxt</b> начинают проводиться перестановки.
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy4"></a>
+<h2>Создаём таймер</h2>
+
+
+<p>
+Чтобы создать таймер, запускаемый нажатием кнопки,
+вставим в html страницу следующий код:
+<pre class="brush: xml">
+<input id="btnID" type="button" value="run"  onClick="run(this)" style="width:4em">
+<b id="outID" style="font-family:monospace; color:green;">Нажми на кнопку</b>
+</pre>
+Первая строка создаёт кнопку (<b class="norm">type=</b><span class="blue">"button"</span>)
+на которой написано <b class="norm">"run"</b> (<b class="norm">value=</b><span class="blue">"run"</span>).
+При нажатии на неё вызовется функция <b class="norm">run</b>
+(<b class="norm">onClick=</b><span class="blue">"run(this)"</span>),
+которую мы определим ниже.
+Кроме этого, кнопка имеет собственное имя <b class="norm">"btnID"</b> (<b class="norm">id=</b><span class="blue">"btnID"</span>),
+которое позволит "добираться" к ней из скрипта. При помощи стиля, кнопке также задаётся фиксированная ширина в 4 символа.
+</p>
+<p>
+Вторая строка - это "жирный текст" (окружённый тегами <b class="norm">&lt;b>...&lt;/b></b>).
+Этот текст ("внутренность" между тегами), как и кнопка, имеет собственное имя
+(<b class="norm">id=</b><span class="blue">"outID"</span>).
+Для красоты, при помощи стиля, для текста задаётся моноширинный шрифт и зелёный цвет.
+</p>
+<p>
+Определим функцию <b class="norm">run</b>,  вызываемую при нажатии на кнопку:
+<pre class="brush: js">
+var timerID;                                      // номер таймера
+
+function run(btn)
+{
+   if(timerID === undefined){
+      timerID = setInterval(timer, 100);          // создаём таймер на 100 ms, в timerID - его номер
+      btn.value = "stop";                         // меняем надпись на кнопке
+   }
+   else{
+      timerID = clearInterval(timerID);           // убиваем таймер, timerID будет undefined
+      btn.value = "run";                          // меняем надпись на кнопке
+   }
+}
+</pre>
+</p>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">setInterval</b><br>
+<b class="norm">clearInterval</b>
+</div>
+В ней анализируется значение глобальной переменной <b class="norm">timerID</b>.
+Если она не определена (как есть в  начале), при помощи функции <b class="norm">setInterval</b>
+создаётся таймер, который будет вызывать функцию <b class="norm">timer</b> (мы определим её далее) с частотой один раз
+в <b class="norm">100</b> ms.
+Затем меняется надпись на кнопке (вызывая <b class="norm">run(this)</b>, кнопка
+в указателе <b class="blue2">this</b> передаёт себя в эту функцию
+как объект, поэтому можно изменить любое её свойство). При повторном нажатии на кнопку сработает второй
+блок условного оператора <b class="blue2">if</b> (переменная <b class="norm">timerID</b>
+уже определена и равна номеру созданного таймера).
+В этом блоке происходит убивание таймера функцией <b class="norm">clearInterval</b>.
+На самом деле она не возвращает значений, поэтому переменная <b class="norm">timerID</b>
+снова становится <b class="blue2">undefined</b> и всё приходит к исходному состоянию.
+</p>
+<p>
+Осталось написать собственно функцию <b class="norm">timer</b> и её окружение:
+<pre class="brush: js">
+var ar = new Array(6);                            // массив из 6-ти элементов
+for(var i = 0; i < ar.length; i++) ar[i]=i;       // в начале ar = 0,1,2,3,4,5
+
+var count = 0;                                    // количество просмотренных перестановок
+
+function timer()
+{
+   var num = 1;                                   // количество итераций за один "тик" таймера
+   do{
+      count++;                                    // тут обрабатываем перестановку
+      document.getElementById('outID').innerHTML = count + ": " + ar;
+   }
+   while(permNxt(ar, 1) && --num);                // 0-город фиксирован, остальные меняем местами
+
+   if(num){                                       // while был прерван permNxt
+      timerID = clearInterval(timerID);           // убиваем таймер, timerID будет undefined
+      document.getElementById('btnID').value="run"// меняем надпись на кнопке
+   }
+}
+</pre>
+В этой функции  <b class="norm">num</b> раз получается очередная перестановка (<b class="norm">permNxt</b>),
+массив которой выводится в текст тега <b class="norm">&lt;b>...&lt;/b></b> с именем <b class="norm">outID</b>.
+Доступ к этому тексту даёт функция <b class="norm">document.getElementById</b>,
+аргументом которой является поле <b class="norm">id</b> текста, а <b class="norm">innerHTML</b> -
+это собственно текст, который мы меняем.
+Если перестановок больше нет, цикл <b class="blue2">while</b> не доберётся по переменной <b class="norm">num</b>
+до нуля. В этом случае происходит уничтожение таймера (конец вычислений) и смена надписи на кнопке.
+Нажав ниже на кнопку (можно несколько раз), стоит посмотреть что у нас получилось.
+Для перезапуска "вычислений" с самого начала, необходимо обновить страницу.
+</p>
+<input id="btnID" type="button" value="run"  onClick="run(this)" style="width:4em">
+<b id="outID" style="font-family:monospace; color:green;">Нажми на кнопку</b>
+
+<script>
+var ar = new Array(6);                            // массив из 6-ти элементов
+for(var i = 0; i < ar.length; i++) ar[i]=i;       // в начале ar = 0,1,2,3,4,5
+
+var timerID;                                      // номер таймера
+
+function run(btn)
+{
+   if(timerID === undefined){
+      timerID = setInterval(timer, 100);          // создаём таймер на 100 ms, timerID хранит номер
+      btn.value = "stop";                         // меняем надпись на кнопке
+   }
+   else{
+      timerID = clearInterval(timerID);           // убиваем таймер, timerID будет undefined
+      btn.value = "run";                          // меняем надпись на кнопке
+   }
+}
+
+var count = 0;                                    // количество просмотренных перестановок
+
+function timer()
+{
+   var num = 1;                                   // количество итераций за один "тик" таймера
+   do{
+      count++;                                    // тут обрабатываем перестановку
+      document.getElementById('outID').innerHTML = count + ": " + ar;
+   }
+   while(permNxt(ar, 1) && --num);
+
+   if(num){                                       // while был прерван permNxt
+      timerID = clearInterval(timerID);           // убиваем таймер, timerID будет undefined
+      document.getElementById('btnID').value="run"// меняем надпись на кнопке
+   }
+}
+</script>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy5a"></a>
+<h2>Воспроизводимые случайные числа</h2>
+
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">Math.random()</b>
+</div>
+Расстояния между городами будем задавать целыми псевдослучайными числами от нуля до некоторого  <b class="norm">n</b> (не включая его).
+В JavaScript объект <b class="norm">Math</b> предоставляет
+функцию <b class="norm">Math.random()</b>, которая возвращает вещественное случайное число
+в интервале <b class="norm">[0...1)</b>, не включая <b class="norm">1</b>.
+Поэтому, при помощи функции отбрасывания целой части <b class="norm">floor</b>, несложно получить целые случайные числа:
+<pre class="brush: js">
+function rand(n) { return Math.floor(Math.random()*n); }
+</pre>
+Впрочем, у этого способа есть один недостаток: последовательности случайных чисел будут различными при каждом обновлении страницы.
+Для воспроизводимости результатов, хотелось бы иметь генератор случайных чисел, которому можно задавать фиксированный "номер" случайной последовательности, обычно,  называемый "seed" (затравка).
+Для этого напишем простой
+<a href="https://en.wikipedia.org/wiki/Linear_congruential_generator">линейный конгруэнтный генератор</a>
+(другие генераторы можно найти <a href="https://jsperf.com/native-and-non-native-random-numbers/10">здесь</a>):
+<pre class="brush: js">
+var lcg = (function() {
+     var z=1, a=1664525, b=1013904223, m = 4294967296; // = 2^32
+  return {
+     seed   : function(val)   { z = val || Math.round(Math.random() * m); },
+     rand   : function(bound) { return (z = (a*z + b) % m) % bound; },
+     random : function()      { return (z = (a*z + b) % m) / m; }
+  };
+}());
+</pre>
+В этом коде используется ряд новых понятий, поэтому сначала покажем как пользоваться  генератором:
+<pre class="brush: js">
+lcg.seed(10);                                     // задаём seed 10
+for(var i=50; i--; ) document.write(lcg.rand(10),',');
+document.write('<br>');
+lcg.seed();                                       // задаём случайный seed
+for(var i=50; i--; ) document.write(lcg.rand(10),',');
+</pre>
+<pre class="outJS">
+<script>
+lcg.seed(10);                                     // задаём seed 10
+for(var i=50; i--; ) document.write(lcg.rand(10),',');
+document.write('<br>');
+lcg.seed();                                       // задаём случайный seed
+for(var i=50; i--; ) document.write(lcg.rand(10),',');
+/*
+document.write('seed=',lcg.getSeed(),'<br>');
+for(var i=0; i < 5; i++ )
+   document.write(lcg.rand(2),'<br>');
+lcg.setSeed();
+document.write('seed=',lcg.getSeed(),'<br>');
+for(var i=0; i < 5; i++ )
+   document.write(lcg.rand(2),'<br>');
+lcg.setSeed(1000);
+document.write('seed=',lcg.getSeed(),'<br>');
+for(var i=0; i < 5; i++ )
+   document.write(lcg.rand(10),'<br>');
+*/
+</script>
+</pre>
+Стоит несколько раз обновить страницу. Первая строка меняться не будет, тогда как вторая
+ каждый раз даёт новый набор случайных чисел.
+</p>
+<p>
+Теперь немного о сути кода. В JavaScript любая функция хранится в некоторой <a href="Recursion.html#rec7">памяти</a>,
+на которую можно получить ссылку. Например, возможен следующий скрипт:
+<pre class="brush: js">
+var sqr = function(x) { return x*x; }
+document.write( sqr(2) );
+</pre>
+</p>
+<p>
+<div class="LearnJS" style="width:12em"><b class="title">JavaScript</b><br>
+Функции как указатели
+</div>
+Он напечатает
+<script>
+var sqr = function(x) { return x*x; }
+document.write( sqr(2) );
+</script>. В этом примере ссылка на память, где хранится безымянная функция возведения <b class="norm">x</b> в квадрат, передаётся переменной <b class="norm">sqr</b>.
+Так как JavaScript "знает", что это функция, с переменной можно обращаться как с функцией, передавая ей в круглых скобках аргумент и ожидая результата
+вычислений. Так, если написать <b class="blue2">var</b> <b class="norm">f = sqr</b>, то <b class="norm">f(5)</b> даст <b class="norm">25</b>,  и т.д.
+В генераторе, в переменную <b class="norm">lcg</b> присваивается результат работы функции, которая возвращает объект (фигурные скобки после <b class="blue2">return</b>).
+Его тремя полями (свойствами) являются указатели на три функции: <b class="norm">seed</b> - инициализация случайной последовательности,
+<b class="norm">rand(bound)</b> - генератор случайного целого неотрицательного числа, меньшего <b class="norm">bound</b> и <b class="norm">random</b> - генератор
+вещественного числа в диапазоне от <b class="norm">0</b> до <b class="norm">1</b>.
+Хотя безымянная функция вернула результат, она сама остаётся в памяти, где также хранятся переменные <b class="norm">z, a, b, m</b>,
+доступные в функциях <b class="norm">seed, rand</b> и <b class="norm">random</b>.
+Тем самым реализуется механизм введения приватных (скрытых) переменных.
+</p>
+<p>
+<div class="LearnJS" style="width:12em"><b class="title">JavaScript</b><br>
+Логическое "или": <b class="norm">a||b</b>
+</div>
+В функции <b class="norm">seed</b>, при присвоении начального значения <b class="norm">z</b>, использовано логическое "или" (<b class="norm">||</b>).
+Если величина слева от него определена (есть аргумент <b class="norm">val</b>) и отлична от нуля, то операция <b class="norm">||</b> считается выполненной и
+её результатом будет <b class="norm">val</b>. В противном случае возвращается значение второго аргумента операции,
+которое является встроенным генератором, выдающим "случайную" затравку для последовательности.
+Например, <b class="norm">0 || 2 ===</b>
+<b class="norm"><script>document.write(0 || 2)</script></b>, а <b class="norm">1 || 2 ===</b> <b class="norm"><script>document.write(1 || 2)</script></b>.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy5"></a>
+<h2>Матрица  расстояний</h2>
+<script>
+var pos = [];                                     // положение городов
+var dists = [];                                   // матрица расстояний
+var path = [];                                    // путь (массив перестановок)
+var minWay = [], minDist = Infinity, maxDist=0;  // лучший путь, его длина и максимальная длина
+var countPath = 0;                                // число просмотренных путей
+var countSol  = 0;                                // число оптимальных решений
+var timerPathID;                                  // номер таймера
+var timeTot, timeBest;                            // общее время и время до лучшего решения
+var total;                                        // число перестановок
+var counts = [];                                  // количество состояний с той или иной длиной
+</script>
+<!--------------------------------------------------------------------------------------->
+
+<p>
+Создадим матрицу расстояний для произвольного числа городов.
+Для наглядности будем рассматривать метрическую задачу.
+Города случайным образом расположим на карте шириной <b class="norm">w</b>,
+высотой <b class="norm">h</b> и попарно соединим прямыми дорогами.
+Кроме кнопки с надписью <b class="norm">"Создать"</b>, на html-страницу добавим 4 поля редактирования (стили опускаем):
+<pre class="brush: xml">
+&lt;input type="button"  value="Создать"  onClick="create()">      &lt;!-- кнопка запуска -->
+
+&lt;input type="text"    value="12"       id="nID">                &lt;!-- число городов  -->
+&lt;input type="text"    value="256"      id="wID">                &lt;!-- ширина карты   -->
+&lt;input type="text"    value="256"      id="hID">                &lt;!-- высота карты   -->
+&lt;input type="text"    value="1"        id="seedID">             &lt;!-- номер последовательности  -->
+</pre>
+Доступ к полям ввода, как обычно, осуществляется по <b class="norm">id</b>
+при помощи функции <b class="norm">document.getElementById</b>.
+</p>
+<p>
+Объявим следующие глобальные переменные, которые потребуются для вычислений:
+<pre class="brush: js">
+var dists = [];                                   // матрица расстояний
+var path  = [];                                   // путь (массив перестановок)
+var minWay =[], minDist = Infinity, maxDist=0;    // лучший путь, его длина и максимальная длина
+var countPath = 0;                                // число просмотренных путей
+var countSol  = 0;                                // число оптимальных решений
+var timerPathID;                                  // номер таймера
+var timeTot, timeBest;                            // общее время и время до лучшего решения
+var total;                                        // число перестановок
+var pos;                                          // массив координат городов
+</pre>
+Их уже стало многовато и в дальнейшем подобные переменные будут прятаться в объект,
+а все вычисления оформляться в виде <a href="AI_JavaScript.html#arr2">класса</a>.
+Константа <b class="norm">Infinity</b> означает наибольшее число поддерживаемое браузером.
+Им инициализируется кратчайший путь, в предположении, что реальные пути будут всегда короче.
+</p>
+<p>
+Ниже приведена функция, создающая случайно расположенные города и вычисляющая евклидовы расстояния между ними:
+<pre class="brush: js">
+function create()
+{
+   var n    = Number(document.getElementById('nID').value);    // число городов
+   var w    = Number(document.getElementById('wID').value);    // ширина карты
+   var h    = Number(document.getElementById('hID').value);    // высота карты
+   var seed = Number(document.getElementById('seedID').value); // номер случайной последовательности
+
+   pos = new Array(n);
+   lcg.seed(seed);                                // инициализируем случайную последовательность
+   for(var j = 0; j < n; j++)                     // для каждого города
+      pos[j] = { x:lcg.rand(w), y:lcg.rand(h) };  // задаём случайное положение
+
+   dists = new Array(n);                          // массив расстояний
+   for(var j=0; j < n; j++)
+      dists[j] = new Array(n);                    // расстояния к каждому городу от j-того
+
+   for(var j = 0; j < n; j++){
+      dists[j][j] = -1;                           // диагональные элементы
+      for(var i = 0; i < j; i++ ){
+         var dx = pos[i].x - pos[j].x;            // вычисляем евклидово расстояние
+         var dy = pos[i].y - pos[j].y;
+         dists[j][i] = dists[i][j] = Math.sqrt(dx*dx+dy*dy);
+      }
+   }
+
+   minDist = Infinity; maxDist = 0;               // наименьшая и наибольшая длина пути
+   countPath = 0;  countSol = 0;                  // число просмотренных путей и оптимальных решений
+
+   path = new Array(dists.length);                // собственно путь
+   for(var i=0; i < path.length; i++) path[i]=i;  // 0,1,2,3,...
+
+   timeTot = timeBest = 0;                        // общее время и время до лучшего решения
+   total = fac(n-1);                              // число перестановок (n-1)! (Recursion.html)
+}
+</pre>
+</p>
+
+<p>
+Обратим внимание, что свойство <b class="norm">value</b> текстового поля
+является строкой, поэтому к нему применяется функция <b class="norm">Number</b>,
+которая переводит строку в число. Кроме этого расстояние между городами округляется
+(<b class="norm">Math.round</b>), поэтому длина пути всегда будет целым числом.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy5a"></a>
+<h2>Рисуем на канвасе</h2>
+
+<p>
+Чтобы нарисовать города и путь между ними, добавим в html-страницу тег <a href="AI_JavaScript.html#canvas">канваса</a>:
+<pre class="brush: xml">
+&lt;canvas id="canID" width="10" height="10"&gt;&lt;/canvas&gt;
+</pre>
+и следующую функцию:
+<pre class="brush: js">
+function show(pos, path, w, h)
+{
+   var canvas = document.getElementById('canID'); // получаем объект канваса
+   var ctx = canvas.getContext('2d');             // у него есть свойство - контекст рисования
+   var x0 = 10, y0 = 10;                          // положение левого верхнего угла карты
+   canvas.width = w+2*x0; canvas.height = h+2*y0; // меняем размеры канваса (чуть больше, чем w x h)
+
+   ctx.beginPath();                               // начало рисования ломаной линии
+   ctx.moveTo(x0+pos[path[0]].x,y0+pos[path[0]].y)// переходим на 0-й город
+   for(var i=1; i < path.length; i++)             // рисуем отрезки пути к i-тому городу
+      ctx.lineTo(x0+pos[path[i]].x, y0+pos[path[i]].y);
+   ctx.closePath();                               // соединяем последнюю и первую точку
+   ctx.stroke();                                  // собственно рисуем линию
+
+   ctx.fillStyle = '#FFA';                        // цвет заливки круга
+   for(var i=0; i < pos.length; i++){
+      ctx.beginPath();
+      ctx.arc(x0+pos[i].x,  y0+pos[i].y, 10, 0, Math.PI*2, true);
+      ctx.stroke();                              // рисуем окружность
+      ctx.fill();                                // рисуем круг
+   }
+
+   ctx.font         = "12pt Consolas";            // моноширинный шрифт
+   ctx.textAlign    = "center";                   // текст центрован по горизонтали
+   ctx.textBaseline = "middle";                   // и по вертикали
+   ctx.fillStyle    = '#000';                     // цвет текста
+   for(var i=0; i < pos.length; i++)
+      ctx.fillText(i, x0+pos[i].x, y0+pos[i].y);  // выводим текст (номер города)
+}
+</pre>
+<p>
+<div style="float:right; width:300px;">
+<canvas id="canID"  width="256" height="256"></canvas>
+</div>
+Пример результата вызова функции приведен справа.
+Смысл команд рисования должен быть ясен из их названия и комментариев в коде.
+Сначала рисуется замкнутая ломаная линия (путь коммивояжёра).
+Затем - окружности городов и поверх них - номера городов.
+Работа с канавасом в JavaScript несколько громоздка и в дальнейшем мы будем использовать
+класс <b class="norm">draw</b>, который эту работу упрощает и одновременно
+позволяет получать картинки в svg-формате.
+</p>
+<script>
+n=5; w=256; h=100;
+pos = new Array(n);
+path= new Array(n);
+for(var i=0; i < n; i++) path[i]=i;
+lcg.seed(2);                                // инициализируем случайную последовательность
+for(var j = 0; j < n; j++)                     // для каждого города
+   pos[j] = { x:lcg.rand(w), y:lcg.rand(h) };  // задаём случайное положение
+
+
+function show(pos, path, w, h)
+{
+   var canvas = document.getElementById('canID'); // получаем объект канваса
+   var ctx = canvas.getContext('2d');             // у него есть свойство - контекст рисования
+   var x0 = 10, y0=10;                            // положение левого верхнего угла карты
+   canvas.width = w+2*x0; canvas.height = h+2*y0; // меняем размеры канваса
+
+   ctx.beginPath();                               // начало рисования ломаной линии
+   ctx.moveTo(x0+pos[path[0]].x,y0+pos[path[0]].y)// переходим на 0-й город
+   for(var i=1; i < path.length; i++)             // рисуем отрезки пути к i-тому городу
+      ctx.lineTo(x0+pos[path[i]].x, y0+pos[path[i]].y);
+   ctx.closePath();                               // соединяем последнюю и первую точку
+   ctx.stroke();                                  // собственно рисуем линию
+
+   ctx.fillStyle = '#FFA';                        // цвет заливки круга
+   for(var i=0; i < pos.length; i++){
+      ctx.beginPath();
+      ctx.arc(x0+pos[i].x,  y0+pos[i].y, 10, 0, Math.PI*2, true);
+      ctx.stroke();                              // рисуем окружность
+      ctx.fill();                                // рисуем круг
+   }
+
+   ctx.font         = "12pt Consolas";            // моноширинный шрифт
+   ctx.textAlign    = "center";                   // текст центрован по горизонтали
+   ctx.textBaseline = "middle";                   // и по вертикали
+   ctx.fillStyle    = '#000';                     // цвет текста
+   for(var i=0; i < pos.length; i++)
+      ctx.fillText(i, x0+pos[i].x, y0+pos[i].y);  // выводим текст (номер города)
+}
+show(pos, path, w, h);
+</script>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy6"></a>
+<h2>Перебор в таймере</h2>
+<p>
+Реализация переборного алгоритма поиска кратчайшего пути в таймере не представляет труда.
+Для сохранения лучшего пути в массиве <b class="norm">minWay</b>, напишем функцию копирования
+значений элементов массива <b class="norm">src</b> в массив <b class="norm">des</b>:
+<pre class="brush: js">
+function  copy(des, src)
+{
+   if(des.length !== src.length)
+      des = new Array(src.length);
+   for(var i=0; i < src.length; i++)
+      des[i] = src[i];
+   return des;
+}
+</pre>
+<script>
+function  copy(des, src)
+{
+   if(des.length !== src.length)
+      des = new Array(src.length);
+   for(var i=0; i < src.length; i++)
+      des[i] = src[i];
+   return des;
+}
+</script>
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">assign</b>
+</div>
+<a href="Recursion.html#rec7">Напомним,</a>  что переменные типа строка, массив или объект
+являются указателями на память, где хранятся соответствующие данные.
+Поэтому присвоение массива типа <b class="norm">minWay = path</b> не приведёт к сохранению текущих
+значений массива <b class="norm">path</b> (которые всё время будут меняться).
+Для хранения лучшего пути, необходимо создать отдельную память и
+скопировать туда содержимое массива. В принципе, это можно сделать при помощи встроенного объекта <b class="norm">Object</b>
+и его метода <b class="norm">assign</b> следующим
+образом: <b class="norm">minWay = Object.assign([], path)</b>.
+Первый аргумент этой функции объявляет новую память (пустой массив),
+в которую затем копируются данные из памяти <b class="norm">path</b>. Возвращает функция
+указатель на новую память и на неё будет ссылаться переменная <b class="norm">minWay</b>.
+Однако, в "Internet Explore" и некоторых мобильных браузерах
+функция <b class="norm">assign</b> объекта <b class="norm">Object</b> не определена.
+Поэтому мы будем пользоваться функцией <b class="norm">copy</b>.
+</p>
+<p>
+Обратим внимание на ещё один момент. Функция <b class="norm">copy</b> возвращает ссылку
+на копируемый массив, которую мы присваиваем в <b class="norm">minWay</b>.
+Если это не сделать, то при первом её вызове, когда <b class="norm">minWay=[]</b>,
+произойдёт выделение памяти под новый массив (в <b class="blue2">if</b>-ниже), о чём <b class="norm">minWay</b> ни чего не знает.
+Записывая <b class="norm">minWay = copy(minWay, path)</b> мы
+устраняем эту неприятность.
+</p>
+<p>
+Функция, вызываемая в таймере имеет вид:
+<pre class="brush: js">
+function timerPath()
+{
+   var time =  window.performance.now();          // время в начале функции
+   var num = 1000000;                             // количество итераций за один "тик" таймера
+   do{
+      countPath++;                                // тут обрабатываем перестановку
+      var d = dist(path, dists);                  // вычисляем длину пути
+
+      if(d === minDist)  countSol++;              // число оптимальных решений
+      if(d < minDist){                            // нашли более короткий путь
+         minDist = d;                             // запоминаем кратчайшее расстояние
+         minWay = copy(minWay, path);             // запоминаем путь
+         countSol = 1;                            // первое оптимальное решение
+         timeBest = timeTot;                      // время до этого решения
+      }
+      if(d > maxDist) maxDist = d;                // запоминаем максимальное расстояние
+   }
+   while(permNxt(path, 1) && --num);              // пока есть перестановки и итерации
+   timeTot +=  window.performance.now() - time;   // время вычислений
+
+   document.getElementById('outPathID').innerHTML = "minDist: " + minDist.toFixed(2)
+                           + ", path: "   + minWay
+                           + "<br>time: " + timeBest.toFixed(0) + " ms, "
+                           + "maxDist = " + maxDist.toFixed(2)
+                           + ", countSol = " + countSol
+                           + ", total: " + timeTot.toFixed(0) + " ms, "
+                           + "iters: " +(100*countPath/total).toFixed(2) + "%";
+
+   if(num){                                       // while был прерван permNxt
+      timerPathID = clearInterval(timerPathID);   // убиваем таймер, timerPathID будет undefined
+      document.getElementById('btnPathID').value="run";
+   }
+
+}</pre>
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="greedy7"></a>
+<h2>Результат</h2>
+
+<p>
+Ниже, при нажатии кнопки "Создать", генерится массив расстояний между городами.
+Их число, ширина, высота карты и "номер" последовательности можно менять.
+Результат представлен svg-картинкой и таблицей.
+Для запуска полного перебора, нажимаем на кнопку <b class="norm">"run"</b>:
+</p>
+<input type="button"  value="Создать" style="width:5em" onClick="create()">
+<input type="text" id="nID" value="12" style="width:1.5em; text-align:center; color:#069; font-weight:bold;">
+городов на карте
+<b class="norm">w =</b> <input type="text" id="wID" value="256" style="width:2em; text-align:center; color:#069; font-weight:bold;">,
+<b class="norm">h =</b> <input type="text" id="hID" value="256" style="width:2em; text-align:center; color:#069; font-weight:bold;">
+и <b class="norm">seed =</b>  <input type="text" id="seedID" value="1" style="width:2em; text-align:center; color:#069; font-weight:bold;">,
+<input type="checkbox" id="showGistoID" checked>показывать распределение длин</input>
+<br>
+<br>
+<input type="button" id="btnPathID" value="run" style="width:5em" onClick="runPath(this)">  полный перебор
+<br>
+<b id="outPathID" class="green">Нажми на кнопку</b>
+<br><br>
+<!---
+<input type="button" id="btnGreedyID" value="run" style="width:5em" onClick="runGreedy(this)">  жадный алгоритм
+<br>
+<b id="outGreedyPathID" class="green">Нажми на кнопку</b>
+--->
+<div style = "overflow:hidden">
+<div class="norm" id="svgID" style="float:left; width:300px">svg</div>
+<div style="float:right;  width:650px">
+<style>
+table.em3 tr td { margin:0px; width:3em; }
+</style>
+<table class="norm rightTD em3" id="tblPathID"></table>
+</div>
+</div>
+</p>
+<p>
+Распределение (в процентах) вариантов различных длин  (доля путей с данной длиной):<br>
+<center>
+<div id="plotID" style="border: 1px dotted #aaa; width:950px"></div>
+</center>
+</p>
+
+<p>
+<!-- Intel Core 2 Due P8800 2.66 GHz  4 Gb  MacBook Pro -->
+ В браузере Google Chrome,  на процессоре  <b class="norm">Intel Core i5-2300 2.8 GHz, 4 Gb</b>
+ полный перебор занимает следующее чистое время (без учёта вывода промежуточных результатов):<br><br>
+<style>
+table tr th,
+table tr td                { text-align: right; width:5em; font-family: monospace;}
+table tr th:nth-child(1),
+table tr td:nth-child(1)   { text-align: left; width:1em;}
+</style>
+<table class="center border">
+<tr> <th style="width:5em"><b class="black">N</b></th>           <td>10</td>      <td>11</td>      <td>12</td>                        <td>13</td>   <td>14</td>  <td>15</td>  <td>...</td> <td>20</td>      </tr>
+<tr> <td> <b class="black">time</b>, <b class="black">t<sub>N</sub></td>                         <td>41 ms</td>   <td>331 ms</td>  <td> 4s</td>      <td>48 s</td> <td>12 m</td> <td> 3 h   </td><td></td> <td>~ 600 лет</td>  </tr>
+<tr> <td> <b class="black">t<sub>N</sub>/t<sub>N-1</sub></b></td> <td></td>       <td>8.1  </td>   <td> 11.4 </td>                   <td> 12.7 </td>  <td>15.2</td> <td> 14.7  </td> <td></td> <td></td> </tr>
+</table>
+<br>
+Понятно, что задача с всего лишь <b class="norm">20</b>-ю городами,
+имеющая <b class="norm">6&middot;10<sup>16</sup></b> вариантов путей, методом перебора не решается
+и необходимо использовать другие подходы,
+которые будут рассмотрены в <a href="http://synset.com/ai/ru/Salesman.html">дальнейшем</a>.
+</p>
+<script>
+function create()
+{
+   var n    = Number(document.getElementById('nID').value);    // число городов
+   var w    = Number(document.getElementById('wID').value);    // ширина карты
+   var h    = Number(document.getElementById('hID').value);    // высота карты
+   var seed = Number(document.getElementById('seedID').value); // номер случайной последовательности
+
+   pos = new Array(n);
+   lcg.seed(seed);                                // инициализируем случайную последовательность
+   for(var j = 0; j < n; j++)                     // для каждого города
+      pos[j] = { x:lcg.rand(w), y:lcg.rand(h) };  // задаём случайное положение
+
+   dists = new Array(n);                          // массив расстояний
+   for(var j=0; j < n; j++)
+      dists[j] = new Array(n);                    // расстояния к каждому городу от j-того
+
+   for(var j = 0; j < n; j++){
+      dists[j][j] = -1;                           // диагональные элементы
+      for(var i = 0; i < j; i++ ){
+         var dx = pos[i].x - pos[j].x;            // вычисляем евклидово расстояние
+         var dy = pos[i].y - pos[j].y;
+         dists[j][i] = dists[i][j] = Math.sqrt(dx*dx+dy*dy);
+      }
+   }
+
+   minDist = Infinity; maxDist = 0;               // наименьшая и наибольшая длина пути
+   countPath = 0;  countSol = 0;                  // число просмотренных путей и оптимальных решений
+   path = new Array(dists.length);                // собственно путь
+   for(var i=0; i < path.length; i++) path[i]=i;  // 0,1,2,3,...
+   timeTot = timeBest = 0;                        // общее время и время до лучшего решения
+   total = fac(n-1);                              // число перестановок (n-1)! (Recursion.html)
+
+   if(document.getElementById('showGistoID').checked) counts = [];
+   else { counts = null; document.getElementById('plotID').innerHTML = ""; }
+
+   showDists(document.getElementById('tblPathID'), dists);
+   man = new Salesman(n);
+   man.create(w, h, seed, lcg);
+   document.getElementById('svgID').innerHTML = man.getSVG();
+}
+
+create();
+</script>
+
+
+<script>
+function runPath(btn)
+{
+   if(timerPathID===undefined){
+      timerPathID = setInterval(timerPath, 250);  // создаём таймер на 250 ms, timerID хранит номер
+      btn.value="stop";                           // меняем надпись на кнопке
+   }
+   else{
+      timerPathID = clearInterval(timerPathID);   // убиваем таймер, timerID будет undefined
+      btn.value="run";                            // меняем надпись на кнопке
+   }
+}
+runPath(document.getElementById('btnPathID'));
+function timerPath()
+{
+   var time =  window.performance.now();          // время в начале функции
+   var num = 1000000;                             // количество итераций за один "тик" таймера
+   do{
+      countPath++;                                // тут обрабатываем перестановку
+      var d = dist(path, dists);                  // вычисляем длину пути
+
+      if(d === minDist)  countSol++;              // число оптимальных решений
+      if(d < minDist){                            // нашли более короткий путь
+         minDist = d;                             // запоминаем кратчайшее расстояние
+         minWay = copy(minWay, path);             // запоминаем путь
+         countSol = 1;                            // первое оптимальное решение
+         timeBest = timeTot;                      // время до этого решения
+         man.minWay = copy(man.minWay, path);
+      }
+      if(d > maxDist) maxDist = d;                // запоминаем максимальное расстояние
+
+      if(counts){
+         var dd = Math.round(d);
+         if(counts[dd]) counts[dd]++; else counts[dd]=1;
+      }
+
+   }
+   while(permNxt(path, 1) && --num);               // пока есть перестановки и итерации
+   timeTot +=  window.performance.now() - time;    // время вычислений
+
+   document.getElementById('outPathID').innerHTML = "minDist: " + minDist.toFixed(2)
+                           + ", path: "   + minWay
+                           + "<br>time: " + timeBest.toFixed(0) + " ms, "
+                           + "maxDist = " + maxDist.toFixed(2)
+                           + ", countSol = " + countSol
+                           + ", total: " + timeTot.toFixed(0) + " ms, "
+                           + "iters: " +(100*countPath/total).toFixed(2) + "%";
+
+   if(num){                                       // while был прерван permNxt
+      timerPathID = clearInterval(timerPathID);   // убиваем таймер, timerPathID будет undefined
+      document.getElementById('btnPathID').value="run";
+   }
+
+   document.getElementById('svgID').innerHTML = man.getSVG();
+
+   if(counts){
+      var p = [];                                          // график распределения
+      for(var i=0; i < counts.length; i++)
+         if(counts[i])
+            p.push( { x:i, y:100*counts[i]/countPath} );
+      var plot = new Plot();
+      plot.width = 950; plot.height = 200;
+      plot.showMaxX = true;
+      plot.points = p;
+      document.getElementById('plotID').innerHTML = plot.getSVG();
+   }
+}
+</script>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Рекурсия", "Recursion.html", "Списки", "Lists.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Force.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:00 GMT -->
+</html>

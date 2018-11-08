@@ -1,0 +1,788 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/BST.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:15 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Бинарные деревья BST</title>
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/bst.js"></script>        <!-- работа с бинарными деревьями  -->
+<script type="application/javascript"   src="../../_js/list.js"></script>       <!-- работа со списками  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- работа с деревьями  -->
+<script type="application/javascript"   src="../../_js/queue.js"></script>      <!-- очередь  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Бинарные деревья</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#search0"> Поиск данных </a></li>
+   <li><a href="#search0a"> Стандартный класс <b class="norm">Map</b> </a></li>
+   <li><a href="#bin0"> Класс BSTree </a></li>
+
+
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#bin1"> Бинарный поиск </a></li>
+   <li><a href="#bin2"> Сбалансированность дерева </a></li>
+   <li><a href="#bin5"> Быстродействие </a></li>
+</ul>
+</div>
+</div>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="search0"></a>
+<h2>Поиск данных</h2>
+
+<p>
+Во многих задачах поиска решения, необходимо
+проверять, встречалось ли уже данное <a href="http://synset.com/ai/ru/search/States.html"></a>состояние (конфигурация) системы или нет.
+Для этого требуется не только сохранять различные данные, но и иметь к ним быстрый доступ.
+JavaScript предоставляет соответствующую возможность при помощи объектов и их свойств.
+Приведём несколько примеров (справа результат скрипта):<br>
+<div style="overflow:hidden">
+<div style="float:left; width:700px">
+<pre class="brush: js">
+var obj = {};                               // объявляем пустой объект
+
+obj[ 5 ]         = 1;                       // добавляем число
+obj["строка"]    = 2;                       // добавляем строку
+obj[ [0,1,2] ]   = 3;                       // добавляем массив
+obj[ {x:0,y:0} ] = 4;                       // добавляем структуру
+
+document.write(obj[5],'<br>');              // получаем значения
+document.write(obj[7],'<br><br>');
+document.write(obj["строка"],'<br>');
+document.write(obj["строка2"],'<br><br>');
+document.write(obj[ [0,1,2] ],'<br>');
+document.write(obj[ [0,1,3] ],'<br><br>');
+document.write(obj[ {x:0,y:0} ],'<br>');
+document.write(obj[ {x:0,y:1} ],'<br><br>');
+
+if( obj[ "строка2" ] === undefined)         // проверяем было ли
+   document.write('Ещё не было строка2.<br><br>');
+
+for(var i in obj)                           // выводим все свойства
+   document.write(obj[i],' ',typeof i,': ', i,'<br>');
+</pre>
+</div>
+
+<div style="float:right">
+<pre class="outJS" style="width:15em">
+<script>
+var obj = {};                               // объявляем пустой объект
+
+obj[ 5 ]         = 1;                       // добавляем число
+obj["строка"]    = 2;                       // добавляем строку
+obj[ [0,1,2] ]   = 3;                       // добавляем массив
+obj[ {x:0,y:0} ] = 4;                       // добавляем структуру
+
+document.write(obj[5],'<br>');              // получаем значения
+document.write(obj[7],'<br><br>');
+document.write(obj["строка"],'<br>');
+document.write(obj["строка2"],'<br><br>');
+document.write(obj[ [0,1,2] ],'<br>');
+document.write(obj[ [0,1,3] ],'<br><br>');
+document.write(obj[ {x:0,y:0} ],'<br>');
+document.write(obj[ {x:0,y:1} ],'<br><br>');
+
+if( obj[ "строка2" ] === undefined)         // проверяем было ли
+   document.write('Ещё не было строка2.<br><br>');
+
+for(var i in obj)                           // выводим все свойства
+   document.write(obj[i],' ',typeof i,': ', i,'<br>');
+</script>
+</pre>
+</div>
+</div>
+</p>
+<p>
+Свойство (то, что находится в квадратных скобках) принято называть <i>ключом</i>, а значение свойства - это некоторые данные (или просто - <i>значение</i>).
+Запись <b class="norm">obj[key]=value</b> означает, что мы сохранили в объекте пару ключ-значение. Поиск данных происходит по ключу.
+Из приведенных примеров следует, что ключами в объекте могут выступать числа, строки и массивы.
+Однако, они при этом конвертируются в строки (значение <b class="blue2">typeof</b> в цикле).
+Проверить наличие свойства можно сравнивая его значение с <b class="blue2">undefined</b>.
+Объект формально можно сделать ключем, но он теряет значения своих свойств и в этом смысла нет.
+Впрочем, для создаваемых классов можно переопределить функцию <b class="norm">toString</b> и тогда всё будет нормально
+работать:
+<div style="overflow:hidden">
+
+<div style="float:left; width:700px">
+<pre class="brush: js">
+function Pos(x, y)                  {  this.x = x;   this.y = y;  }
+Pos.prototype.toString = function() {  return "x:"+this.x+",y:"+this.y;}
+
+obj[ new Pos(1,1) ]  = 5;
+
+document.write(obj[new Pos(1,1)],'<br>');
+document.write(obj[new Pos(1,2)],'<br><br>');
+
+for(var i in obj)
+   document.write(obj[i],' ',typeof i,': ', i,'<br>');
+</pre>
+</div>
+
+<div style="float:right">
+<pre class="outJS" style="width:15em">
+<script>
+function Pos(x, y)                  {  this.x = x;   this.y = y;  }
+Pos.prototype.toString = function() {  return "x:"+this.x+",y:"+this.y;}
+
+obj[ new Pos(1,1) ]  = 5;
+
+document.write(obj[new Pos(1,1)],'<br>');
+document.write(obj[new Pos(1,2)],'<br><br>');
+
+for(var i in obj)
+   document.write(obj[i],' ',typeof i,': ', i,'<br>');
+</script>
+</pre>
+</div>
+
+</div>
+
+</p>
+
+<p>
+<div class="LearnJS"><b class="title">JavaScript</b><br>
+<b class="norm">key <b class="blue2">in</b> obj</b>
+</div>
+Обратим внимание на конструкцию <b class="blue2">for</b><b class="norm">(<b class="blue2">var</b> key <b class="blue2">in</b> obj)</b>.
+Она пробегает по всем свойствам <b class="norm">key</b> объекта <b class="norm">obj</b> в том порядке, в котором они были вставлены.
+Аналогичным образом можно проходить и по элементам массива,
+однако это не рекомендуется делать, так как такой цикл будет существенно <i>медленнее</i>
+обычного цикла от начала к концу:
+<b class="blue2">for</b><b class="norm">(<b class="blue2">var</b> i=0; i < ar.length; i++)</b>
+или от конца к началу:
+<b class="blue2">for</b><b class="norm">(<b class="blue2">var</b> i=ar.length; i--; )</b>.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="search0a"></a>
+<h2>Стандартный класс <b class="norm">Map</b></h2>
+
+<p>
+В JavaScript существует также встроенный класс
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"><b class="norm">Map</b></a>,
+который является ассоциативным массивом. Его ключами могут быть числа,
+строки и ссылки на объекты. При этом числа и объекты в строки не конвертируются:
+<div style="overflow:hidden">
+<div style="float:left; width:750px">
+<pre class="brush: js">
+var obj = {x:2};                            // некоторый объект
+var map = new Map();                        // ассоциативный массив
+map.set("key", "data 1");                   // ключ -  строка
+map.set(   25, "data 2");                   // ключ - число
+map.set(  obj, "data 3");                   // ключ - указатель на объект
+
+document.write(map.get("key"), '<br>');     // значение для строкового ключа
+document.write(map.get(25),    '<br>');     // значение для числового ключа
+document.write(map.get(obj), '<br>');       // значение для указателя на объект
+document.write(map.get(16), '<br>');        // undefined - нет такого ключа
+document.write(map.get({x:2}), '<br>');     // undefined - это другая память!
+
+if( map.has("key") ) document.write("ok");  // проверка наличия ключа
+
+for (var [key, value] of map)               // выводим все ключи и значения
+  document.write(key + " = " + value,'<br>');
+
+for (var key of map.keys())                 // выводим только ключи и их тип
+  document.write(key," : ", typeof key,'<br>');
+
+</pre>
+</div>
+
+<div style="float:right">
+<pre class="outJS" style="width:13em; margin-top:7em">
+<script>
+var obj = {x:2};                            // некоторый объект
+var map = new Map();                        // ассоциативный массив
+map.set("key", "data 1");                   // ключ -  строка
+map.set(   25, "data 2");                   // ключ - число
+map.set(  obj, "data 3");                   // ключ - указатель на объект
+
+document.write(map.get("key"), '<br>');     // значение для строкового ключа
+document.write(map.get(25),    '<br>');     // значение для числового ключа
+document.write(map.get(obj), '<br>');       // значение для указателя на объект
+document.write(map.get(16), '<br>');        // undefined - нет такого ключа
+document.write(map.get({x:2}), '<br>');     // undefined - это другая память!
+
+if( map.has("key")) document.write("ok<br>")// проверка наличия ключа
+
+for (var [key, value] of map)               // выводим все ключи и значения
+  document.write(key + " = " + value,'<br>');
+
+for (var key of map.keys())                 // выводим только ключи и их тип
+  document.write(key," : ", typeof key,'<br>');
+
+</script>
+</pre>
+</div>
+</div>
+К сожалению, некоторые мобильные браузеры не поддерживают класс <b class="norm">Map</b>.
+Отстаёт в реализации ряда методов этого класса также Internet Explorer.
+</p>
+<p>
+Использование объектов  или класса <b class="norm">Map</b> для быстрого доступа к данным в JavaScript достаточно
+эффективный способ. Чтобы было с чем сравнивать, создадим собственную структуру хранения
+упорядоченных данных - <i>бинарное дерево</i>.
+Дополнительно мы получим возможность хранить данные с повторяющимся ключом (свойством).
+</p>
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="bin0"></a>
+<h2>Класс <b class="norm">BSTree</b></h2>
+
+<script>
+Tree.svg.colors = ["#FFC", "#096", "#069"];
+var bst = new BSTree();
+bst.addDown(4); bst.addDown(2); bst.addDown(6);
+bst.addDown(1); bst.addDown(3); bst.addDown(5); bst.addDown(7);
+</script>
+<p>
+Узел бинарного дерева - это объект <b class="norm">{ k, v, lf, rt }</b>, хранящий ключ
+<b class="norm">k</b>,  данные <b class="norm">v</b>
+и указатели на левую   <b class="norm">lf</b> и правую <b class="norm">rt</b> ветки потомков узла.
+При этом,  ниже, на левой ветке всегда находятся узлы со значением ключа <b class="norm">k</b> меньшим или равным,
+чем у данного, а на правой ветке - с большим.
+На рисунке приведен пример бинарного дерева с <b class="norm"><script>document.write(bst.count());</script></b> узлами
+(в узлах - ключ <b class="norm">k</b>):
+<center>
+<script>
+document.write(bst.getSVG());
+</script>
+</center>
+</p>
+<p>
+Числа <b class="norm">1,2,3</b> меньшие <b class="norm">4</b>, находятся слева от него, а <b class="norm">5,6,7</b> - большие и расположены
+справа. Это свойство выполняется не только для корня, но и для любого узла дерева (<b class="norm">1</b> слева, а <b class="norm">3</b> -
+справа от <b class="norm">2</b> и т.д.).
+Упорядоченность бинарного дерева ускоряет функции поиска, т.к. спуск сверху-вниз происходит <i>дихотомией</i> (делением) - в каждом узле мы поворачиваем
+налево или направо, в зависимости от значения ключа <b class="norm">k</b> в этом узле.
+</p>
+<p>
+Напишем конструктор класса <b class="norm">BSTree</b> (Binary Search Tree = дерево двоичного поиска):
+<pre class="brush: js">
+function BSTree()
+{
+   this.root = null;                              // кореневой узел дерева
+   this.length  = 0;                              // число узлов в дереве
+}
+</pre>
+Указатель <b class="blue2">null</b> похож на <b class="norm">undefined</b>, но, в отличии от последнего, определён
+и указывает в "нулевой" адрес памяти. Т.е. свойство <b class="norm">root</b> класса <b class="norm">BSTree</b>
+мы объявили, но его значение равно "нулевому указателю" (см. <a href="Lists.html#structure_null">null vs. undefined</a>).
+</p>
+<p>
+Функцию вставки нового узла в дерево с сохранением его бинарных свойств назовём <b class="norm">addDown</b>.
+В ней, начиная от корня, мы опускаемся вниз по дереву, "поворачивая" к тому или иному потомку, в зависимости от значения ключей.
+Если новый ключ совпал с уже существующим - он вставляется после существующего. В противном случае,
+мы добираемся до самого низа дерева, где и вставляем новый узел:
+<pre class="brush: js">
+BSTree.prototype.addDown = function(k, v)
+{
+   this.length++;                                 // увеличиваем число узлов
+   var n = this.root;                             // начинаем с корня дерева
+   while(n){
+      if(k < n.k){                                // ключ k меньше - идём налево,
+         if(n.lf) n = n.lf;                       // если есть левая ветка, идём дальше
+         else{                                    // иначе создаём новый узел
+            n.lf = { k:k, v:v, lf:null, rt:null };
+            return;
+         }
+      }
+      else if(k > n.k){                           // ключ k больше - идём направо,
+         if(n.rt) n = n.rt;                       // если есть правая ветка, идём дальше
+         else{                                    // иначе создаём новый узел
+            n.rt = { k:k, v:v, lf:null, rt:null };
+            return;
+         }
+      }
+      else{                                       // ключи совпадают,
+         n.lf = { k:k, v:v, lf:n.lf, rt:null };   // вставляем после n
+         return;
+      }
+   }
+   this.root = { k:k, v:v, lf:null, rt:null };    // в дереве не было узлов - это корень
+}
+</pre>
+</p>
+<p>
+Добавим, например, в дерево последовательно числа <b class="norm">5,3,3,7,6,8,4,2,1,7,9</b>:<br><br>
+<center>
+<script>
+bst = new BSTree();
+bst.addDown(5); var t=bst.getTree();  Tree.setNm(t, "chk", 1, 5); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(3);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 3); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(3);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 3); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(7);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 7); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(6);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 6); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(8);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 8); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(4);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 4); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(2);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 2); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(1);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 1); document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(7);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 7);  document.write(Tree.getSVG(t),'&emsp; ');
+bst.addDown(9);  t=bst.getTree();  Tree.setNm(t, "chk", 1, 9);  document.write(Tree.getSVG(t),'&emsp; ');
+//document.write(bst.length);
+</script>
+</center>
+<br>
+Обратим внимание, что при таком способе вставки, корнем дерева  является первое вставляемое значение,
+а последний ключ всегда находится в самом низу (если он появился впервые).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="bin1"></a>
+<h2>Бинарный поиск</h2>
+</p>
+В бинарном дереве несложно находить узлы с тем или иным свойством.
+Например, функции, возвращающие узел с минимальным или максимальным значением ключа,
+выглядят тривиальным образом (используем рекурсию):
+<div style="overflow:hidden">
+<div style="float:left">
+<pre class="brush: js">
+BSTree.prototype.min = function(n)
+{
+   if(!n) n = this.root;
+   return n.lf? this.min(n.lf): n.k;
+}
+</pre>
+</div>
+<div style="float:right">
+<pre class="brush: js">
+BSTree.prototype.max = function(n)
+{
+   if(!n) n = this.root;
+   return n.rt? this.max(n.rt): n.k;
+}
+</pre>
+</div>
+</div>
+
+Их вызов  для последнего дерева выше даёт <b class="norm"><script>document.write(bst.min())</script></b> для <b class="norm">min</b>
+и  <b class="norm"><script>document.write(bst.max())</script></b> - для <b class="norm">max</b>.
+
+</p>
+<p>
+Функция, проверяющая наличие узла на дереве с ключом <b class="norm">k</b>, осуществляет каждый раз выбор правильной ветки:
+<pre class="brush: js">
+BSTree.prototype.has = function(k)
+{
+   var n = this.root;
+   while(n){
+      if(k < n.k)                                 // если он меньше, идём налево
+         n = n.lf;
+      else if(k > n.k)                            // если больше - направо
+         n = n.rt;
+      else                                        // иначе ключи совпадают
+         return true;
+   }
+   return false;                                  // совпадения не нашли
+}
+</pre>
+Вызов <b class="norm">bst.has(5)</b> для дерева выше даст <b class="blue2"><script>document.write(bst.has(5))</script></b>,
+а для <b class="norm">bst.has(10)</b> - <b class="blue2"><script>document.write(bst.has(10))</script></b>.
+</p>
+<p>
+Скрипт, создающий дерево из начала документа и ищущий на нём ключ <b class="norm">5</b> выглядит следующим образом:
+<pre class="brush: js">
+var bst = new BSTree();                           // создаём экземпляр класса
+bst.addDown(4);                                   // окажется корнем
+bst.addDown(2); bst.addDown(6);                   // левой и правой веткой
+bst.addDown(1); bst.addDown(3);
+bst.addDown(5); bst.addDown(7);
+document.write(bst.min(), bst.max(), bst.has(5));  // минимальное, максимальное значение и есть ли 5
+</pre>
+</p>
+
+
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="bin2"></a>
+<h2>Сбалансированность дерева</h2>
+
+<p>
+Дерево может быть сбалансированным, не очень сбалансированным и совсем не сбалансированным:
+<center>
+<script>
+bst = new BSTree();
+bst.addDown(4); bst.addDown(2); bst.addDown(6);
+bst.addDown(1); bst.addDown(3); bst.addDown(5); bst.addDown(7);
+document.write(bst.getSVG(),'&emsp;&emsp;&emsp;');
+var len1 = bst.len(), bal1 = bst.balance();
+
+bst = new BSTree();
+bst.addDown(4);  bst.addDown(3); bst.addDown(2);  bst.addDown(1);  bst.addDown(6); bst.addDown(5); bst.addDown(7);
+document.write(bst.getSVG(),'&emsp;&emsp;&emsp;');
+var len2 = bst.len(), bal2 = bst.balance();
+
+bst = new BSTree();
+bst.addDown(6); bst.addDown(5); bst.addDown(7); bst.addDown(4);  bst.addDown(2);  bst.addDown(1); bst.addDown(3);
+document.write(bst.getSVG(),'&emsp;');
+var len3 = bst.len(), bal3 = bst.balance();
+
+bst = new BSTree();
+bst.addDown(1);  bst.addDown(2);  bst.addDown(3); bst.addDown(4); bst.addDown(5); bst.addDown(6); bst.addDown(7);
+document.write(bst.getSVG());
+var len4 = bst.len(), bal4 = bst.balance();
+</script>
+</center>
+</p>
+<p>
+Критерием сбалансированности дерева будем считать суммарное число рёбер на пути к каждому узлу:
+<pre class="brush: js">
+BSTree.prototype.len = function(n, depth)
+{
+   if(!n) n = this.root;
+   if(depth === undefined) depth = 0;
+
+   return depth + (n.lf? this.len(n.lf, depth+1):0)
+                + (n.rt? this.len(n.rt, depth+1):0);
+}
+</pre>
+У  деревьев приведенных выше, соответственно <b class="norm"><script>document.write('len = ', len1,", ",len2,", ",len3,", ",len4)</script></b>.
+Для полностью несбалансированного дерева с <b class="norm">n</b> узлами суммарная длина равна
+<b class="norm">0+1+2+...+(n-1) = n(n-1)/2</b>.
+Для сбалансированного  дерева с числом узлов <b class="norm">n = 2<sup>k</sup>-1</b>
+суммарная длина <a href="https://oeis.org/search?q=2%2C10%2C34%2C98&amp;sort=&amp;language=&amp;go=Search">равна</a>
+<b class="norm">0+1&middot;2<sup>1</sup>+...+(k-1)&middot;2<sup>(k-1)</sup> = 2 + (k-2) &middot; 2<sup>k</sup>
+= (n+1)&middot;log<sub>2</sub>(n+1) - 2&middot;n</b>.
+
+</p>
+<p>
+Если дерево сбалансировано, поиск нужного узла дихотомией (налево-направо) при больших <b class="norm">n</b>, делается
+в среднем за <b class="norm">log<sub>2</sub>(n)</b> шагов (средняя длина пути к ключу равна суммарной длине дерева, делённой на <b class="norm">n</b>).
+В худшем случае (для полностью несбалансированного дерева), поиск в среднем линеен по числу узлов <b class="norm">n</b>.<br><br>
+<style>
+table tr th,
+table tr td                { text-align: right; width:4em; font-family: monospace;}
+table tr th:nth-child(1),
+table tr td:nth-child(1)   { text-align: left; width:1em;}
+</style>
+<table class="center border">
+<tr> <td> <b class="black">n</b></td>                                <td>100</td>   <td>1000 </td>     <td> 1000000</td>     <td>1000000000 </td>      </tr>
+<tr> <td> <b class="black">log<sub>2</sub>(n)</b></td>               <td>  7</td>   <td>  10 </td>     <td> 20</td>     <td>30 </td>        </tr>
+</table>
+</p>
+<p>
+Можно ввести меру сбалансированности дерева, которая всегда будет находиться в интервале от <b class="norm">0</b>
+(несбалансированное дерево) до <b class="norm">1</b> (сбалансированное), независимо от числа узлов
+(для деревьев выше, она даёт <b class="norm"><script>document.write(bal1.toFixed(2),", ",bal2.toFixed(2),", ",bal3.toFixed(2),", ",bal4.toFixed(2))</script></b>):
+<pre class="brush: js">
+BSTree.prototype.balance = function()
+{
+   return ((this.length+1)*Math.log2(this.length+1)-2*this.length)/this.len();
+}
+</pre>
+</p>
+<p>
+Существуют различные алгоритмы, позволяющие поддерживать сбалансированность дерева достаточно эффективными
+способами (например, красно-чёрные деревья).
+Впрочем, если (как это обычно бывает) поступает большой поток случайных данных, дерево оказывается достаточно хорошо сбалансировано
+уже при простейшем методе вставки <b class="norm">addDown</b>.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<a id="bin5"></a>
+<h2>Быстродействие</h2>
+
+<p>
+Сравним <a href="LongCalc.html">быстродействие</a> вставки ключа в бинарное дерево методом класса <b class="norm">BSTree</b>
+и при помощи класса <b class="norm">Map</b> или обычных объектов JavaScript.
+В последнем случае объект сначала объявляется как пустой: <b class="blue2">var</b> <b class="norm">obj = {}</b>,
+а затем, происходит вставки следующим образом: <b class="blue2"><b class="norm">obj[key]=1</b></b>.
+Будем вставлять упорядоченные целые числа <b class="norm">i</b>, случайные числа <b class="norm">rnd=Math.random()</b>
+и случайные числа, преобразованные в строку <b class="norm">rndStr = ""+rnd</b>.
+Естественно, эти величины генерятся перед тестом и время на их получение не учитывается.
+<a href="Queue.html">Приоритетная очередь</a> <b class="norm">Queue</b> и <a href="Lists.html">список</a> <b class="norm">List</b>
+решают несколько другие задачи, однако также добавлены для сравнения.
+</p>
+<p>
+<div style="overflow:hidden">
+<div style="float:left; width:450px">
+<input type="button" value="run" onClick="spd.run(this);">
+<input type="text" id="speedArrNum" value="10000"  style="width:5em;text-align:center;"> добавлений
+<input type="text" id="speedArrIters" value="10"  style="width:3em;text-align:center;"> раз: (ms) ( цикл: <b class="norm" id="loopID"></b>)<br>
+<style>  table.right td { color: red; } table.right th { color: black; } </style>
+
+<table class="right black" id="tblOUT">
+   <tr> <th style="width:7em"></th> <th><b class="norm"> i</b></th> <th><b class="norm">rnd</b></th>  <th><b class="norm">rndStr</b></th>  </tr>
+   <tr> <th><b class="black">Object[]</b></th>        <td>4</td>     <td>88</td>       <td>38</td> <td></td>  </tr>
+   <tr> <th><b class="black">Map.set</b></th>         <td>22   </td> <td> 35  </td>    <td> 24   </td> <td></td>  </tr>
+   <tr> <th><b class="black">BSTree.addDown</b></th>   <td>4919</td> <td>29</td>       <td>55</td> <td></td>  </tr>
+   <tr> <th><b class="black">Queue.unshift</b></th>    <td>  3 </td> <td>  9  </td>    <td> 12   </td> <td></td>  </tr>
+   <tr> <th><b class="black">List.unshift</b></th>     <td>  2 </td> <td>  2  </td>     <td> 2   </td> <td></td>  </tr>
+
+</table>
+</div>
+<div style="float:right; margin-top:-1em">
+<pre class="brush: js">
+for(var it = 0; it < iters; it++){
+   var bst = new BSTree();
+   for(var k=0; k < num; k++) bst.add(arr[k]);
+}
+
+for(var it = 0; it < iters; it++){
+   var lst = new List();
+   for(var k=0; k < num; k++) lst.add(arr[k]);
+}
+</pre>
+</div>
+</div>
+<div id="TreeSVGID" style="overflow:auto"></div>
+<script>
+var arrInt, arrRnd, arrRndStr;
+
+function Speed(out, pars)                         //*** out - id вывода и pars - id параметров
+{
+   this.state   = 0;                              // текущее состояние вычислений
+   this.timerID = null;                           // id таймера, который вызывет функцию timer
+   this.out     = document.getElementById(out);   // объект html-страницы для вывода
+   this.btn     = null;                           // кнопка запуска вычислений
+   this.period  = 100;                            // период вызова таймера в ms
+   if(pars){
+      this.pars  = new Array(pars.length);        // массив параметров (если они есть)
+      for(var i=pars.length; i--; )
+         this.pars[i] = Number(document.getElementById(pars[i]).value);
+   }
+}
+
+Speed.prototype.run = function(btn)               //*** вызываем из кнопки для запуска или остановки
+{
+   if(this.timerID === null){                     // создаём таймер
+      this.timerID = setInterval(this.timer.bind(this), this.period);
+      btn.value = "stop";                         // меняем надпись на кнопке
+      this.btn  =  btn;                           // запоминаем кнопку
+      this.init();                                // функция инициализации
+      this.timer();                               // сразу запускаем вычисление
+   }
+   else
+      this.stop();                                // таймер уже запущен, убиваем  его
+}
+
+Speed.prototype.stop = function()                 //*** вызываем для остановки таймера
+{
+   clearInterval(this.timerID);                   // убиваем  таймер
+   this.timerID = null;                           // обнуляем ID таймера
+   this.btn.value = "run";                        // меняем надпись на кнопке
+}
+
+Speed.prototype.init = function()
+{
+   var tbl =  this.out, num=0;
+   for(var r=1; r < tbl.rows.length; r++)         // очищаем таблицу
+      for(var c=1; c < 4; c++){
+         tbl.rows[r].cells[c].innerText = "";
+         num++;
+      }
+
+   this.state = 0;                                // номер текущих вычислений
+   this.loop  = 0;                                // количество циклов
+   this.sumTime = new Array(num);
+   this.cntCalc = new Array(num);
+   for(var i = 0; i < num; i++)
+      this.sumTime[i] = this.cntCalc[i] = 0;
+
+   var cnt = this.pars[0];
+   arrInt = new Array(cnt); arrRnd = new Array(cnt); arrRndStr = new Array(cnt);
+   for(var k=0; k < cnt; k++){
+      arrInt[k] = k;
+      var rnd = Math.random();
+      arrRnd[k] = rnd;
+      arrRndStr[k] = ""+rnd;
+   }
+}
+
+Speed.prototype.timer = function()
+{
+   var tbl =  this.out, r, c, res;
+   var num = this.pars[0], iters = this.pars[1];
+   var time = window.performance.now();
+   switch(this.state){
+      case 0 : speed1(arrInt,    iters, num); r=1; c=1; break;
+      case 1 : speed1(arrRnd,    iters, num); r=1; c=2; break;
+      case 2 : speed1(arrRndStr, iters, num); r=1; c=3; break;
+
+      case 3: speedMap(arrInt,    iters, num); r=2; c=1; break;
+      case 4: speedMap(arrRnd,    iters, num); r=2; c=2; break;
+      case 5: speedMap(arrRndStr, iters, num); r=2; c=3; break;
+
+      case 6 : speed2(arrInt,    iters, num); r=3; c=1; break;
+      case 7 : speed2(arrRnd,    iters, num); r=3; c=2; break;
+      case 8 : speed2(arrRndStr, iters, num); r=3; c=3; break;
+
+      case 9: speedQueue(arrInt,    iters, num); r=4; c=1; break;
+      case 10: speedQueue(arrRnd,    iters, num); r=4; c=2; break;
+      case 11: speedQueue(arrRndStr, iters, num); r=4; c=3; break;
+
+      case 12: speedList(arrInt,    iters, num); r=5; c=1; break;
+      case 13: speedList(arrRnd,    iters, num); r=5; c=2; break;
+      case 14: speedList(arrRndStr, iters, num); r=5; c=3; break;
+      default:
+         if(this.loop++ > 1000)
+            this.stop();                          // останавливаемся
+   }
+   time = window.performance.now() - time;        // время вычислений
+   this.cntCalc[this.state]++;
+   this.sumTime[this.state] += time;              // вывод времени вычислений
+   tbl.rows[r].cells[c].innerText=(this.sumTime[this.state]/this.cntCalc[this.state]).toFixed(0);
+   document.getElementById('loopID').innerText=this.cntCalc[0];
+   this.state++;
+   if(this.state >= this.sumTime.length)
+      this.state = 0;                             // начинаем по-новой
+}
+
+var spd = new Speed('tblOUT', ['speedArrNum', 'speedArrIters']);     // id объекта вывода и массив входных параметров
+
+
+
+function speed1(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var lst = {};
+       for(var k=0; k < num; k++)
+          //if(lst[arr[k]] === undefined)
+             lst[arr[k]] = 1;
+    }
+}
+function speed2(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var bst = new BSTree();
+       for(var k=0; k < num; k++)
+          //if(!bst.has(arr[k]))
+             bst.addDown(arr[k]);
+    }
+}
+function speed3(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var bst = new BSTree();
+       for(var k=0; k < num; k++)
+          //if(!bst.has(arr[k]))
+             bst.addRoot(arr[k]);
+    }
+}
+function speed4(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var bst = new BSTree();
+       for(var k=0; k < num; k++)
+          //if(!bst.has(arr[k]))
+             bst.add(arr[k]);
+       //if(it+1===iters)  document.getElementById("TreeSVGID").innerHTML = bst.getSVG();
+    }
+}
+
+function speedMap(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var map = new Map();
+       for(var k=0; k < num; k++)
+          map.set(arr[k],1);
+    }
+}
+
+function speedQueue(arr, iters, num)
+{
+    var q = new Queue();
+   for(var it = 0; it < iters; it++){
+       q.clear();
+       for(var k=0; k < num; k++)
+          q.unshift(arr[k],1);
+    }
+}
+
+function speedList(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var lst = new List();
+       for(var k=0; k < num; k++)
+          lst.unshift(arr[k]);
+    }
+}
+
+function speedListAdd(arr, iters, num)
+{
+   for(var it = 0; it < iters; it++){
+       var lst = new List();
+       for(var k=0; k < num; k++)
+          lst.add(arr[k]);
+    }
+}
+
+
+</script>
+</p>
+<p>
+Объекты JavaScript (в таблице - первая строка) достаточно шустро работают с целочисленными данными (они дают короткие строки).
+Для случайных вещественных чисел (<b class="norm">rnd</b>)
+им уже приходится тяжелее (так как числа каждый раз надо преобразовывать к длинным строкам).
+В этом случае вставка вниз <b class="norm">BST.addDown</b> оказывается вполне конкурентной.
+Если случайные числа поступают в строковом формате (<b class="norm">rndStr</b>), преимущество <b class="norm">BSTree</b> теряется.
+Во первых, ему  при вставке в каждом узле необходимо в среднем <b class="norm">1.5</b>
+сравнений (больше, а затем меньше) строк (в JS нет встроенной C-подобой  функции <b class="norm">strcmp(a,b)</b> делающий сравнение <b class="norm">-1,0,1</b>
+за один проход). Ну и конечно, у <b class="norm">BSTree</b> большие проблемы с вставкой упорядоченных данных.
+</p>
+<p>
+Таким образом, для упорядоченного запоминания данных, в дальнейшем мы будем использовать класс <b class="norm">Map</b>,
+который для мобильных браузеров можно эмулировать при помощи объектов.
+JavaScript.
+</p>
+<!----
+<script>
+var map = new Map();
+var ar  = [1,2];
+map.set(ar);
+document.write(map.has(ar),"  ",map.has([1,2]),"  ",map.has([1,3]),'<br>' );
+ar[0]=2;
+document.write(map.has(ar),"  ",map.has([2,2]),"  ",map.has([1,3]),'<br>' );
+var x = 5;
+map.set(x);
+document.write(map.has(x),"  ",map.has(5),"  ",map.has(6),'<br>' );
+</script>
+--->
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("Списки", "Lists.html",  "Приоритетная очередь", "Queue.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/BST.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:17 GMT -->
+</html>

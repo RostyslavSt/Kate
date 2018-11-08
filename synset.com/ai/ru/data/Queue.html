@@ -1,0 +1,391 @@
+<html  lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/Queue.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:17 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Приоритетная очередь</title>
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript"   src="../../_js/menu.js"></script>       <!-- меню  -->
+<script type="application/javascript"   src="../../_js/queue.js"></script>        <!-- работа с бинарными деревьями  -->
+<script type="application/javascript"   src="../../_js/list.js"></script>       <!-- работа со списками  -->
+<script type="application/javascript"   src="../../_js/tree.js"></script>       <!-- работа с деревьями  -->
+<script type="application/javascript"   src="../../_js/draw.js"></script>
+
+<script type="text/javascript" src="../../../_syntax/shCore.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushJScript.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushCss.js"></script>
+<script type="text/javascript" src="../../../_syntax/shBrushXml.js"></script>
+<link href="../../../_syntax/shCore.css" rel="stylesheet" type="text/css" />
+<link href="../../../_syntax/shThemeDefault.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+   SyntaxHighlighter.defaults['toolbar'] = false;
+   SyntaxHighlighter.defaults['gutter'] = false;
+   SyntaxHighlighter.all();
+</script>
+
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content" contenteditable="false"  spellcheck>
+<h1 class="section_name">Приоритетная очередь</h1>
+<p>
+<div style="overflow:auto">
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#queue0">Класс <b class="norm">Queue</b> </a></li>
+   <li><a href="#queue1">Добавление элемента в очередь</a></li>
+</ul>
+</div>
+<div style="width:50%; float:left">
+<ul class="contents">
+   <li><a href="#queue2">Выталкивание элемента из очереди</a></li>
+</ul>
+</div>
+</div>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="queue0"></a>
+<h2>Класс <b class="norm">Queue</b></h2>
+
+<p>
+Сбалансированное <a href="bst-2.html">бинарное дерево</a> позволяет быстро найти любой узел.
+Однако во многих приложениях требуется получать не произвольный
+узел, а только минимальный.
+Такая задача возникает, например, при организации направленного поиска.
+Подходящей для этого структурой данных будет  приоритетная <a href="Lists.html">очередь</a> (priority queue).
+</p>
+<p>
+Прежде чем обсуждать детали  организации приоритетной очереди, приведём пример её использования
+(модуль <a href="../_js/queue.html"><b class="norm">queue.js</b></a>):
+<pre class="brush: js">
+var q = new Queue();                              // создаём пустую приоритетную очередь
+for(var i = 0; i < 50; i++)                       // заталкиваем в неё 50 случайных чисел
+   q.unshift(Math.floor(Math.random()*100));      // в диапазоне от 0 до 99
+
+while( !q.empty() )                               // пока очередь не пустая,
+   document.write(q.shift(), ", ");               // выталкиваем минимальный элемент
+</pre>
+В этом примере в приоритетную очередь последовательно помещается <b class="norm">50</b> случайных чисел
+в диапазоне от <b class="norm">0</b> до <b class="norm">99</b>.
+Затем в цикле <b class="blue2">while</b> элементы из очереди выталкиваются
+в порядке  увеличения их значения:
+</p>
+<center>
+<script>
+var q = new Queue();                              // создаём пустую приоритетную очередь
+for(var i = 0; i < 50; i++)                       // заталкиваем в неё 50 случайных чисел
+   q.unshift(Math.floor(Math.random()*100));      // в диапазоне от 0 до 99
+var tree = q.getTree();
+</script>
+</center>
+<div class="outJS">
+<script>
+while(!q.empty())                                 // пока очередь не пустая,
+   document.write(q.shift(), ", ");               // выталкиваем минимальный элемент
+</script>
+</div>
+<p>
+Кроме конструктора, в классе <b class="norm">Queue</b> есть 3 базовые функции:
+<b class="norm">unshift(n)</b> - добавление в очередь нового элемента <b class="norm">n</b>
+(сдвигая "назад" большие элементы),
+<b class="norm">shift()</b> - выталкивание минимального элемента
+(сдвигая очередь "вперёд") и, наконец, логическая функция
+<b class="norm">empty()</b> возвращающая <b class="blue2">true</b>,
+если очередь пустая (иначе - <b class="blue2">false</b>).
+</p>
+<p>
+В приоритетной очереди можно сохранять не только числа или строки, но и любые объекты.
+Для этого необходимо переопределить функцию меньше:
+<pre class="brush: js">
+var q = new Queue();                              // создаём пустую приоритетную очередь
+q.lt  = function(a,b) { return a.val < b.val; }   // функция меньше
+
+q.unshift( {val:2,   item:"table"} );             // добавляем 4 объекта
+q.unshift( {val:75,  item:"book" } );
+q.unshift( {val:10,  item:"ring" } );
+q.unshift( {val:5,   item:"car"  } );
+
+while( !q.empty() ){                              // пока очередь не пустая,
+   var n = q.shift();                             // выталкиваем объект с минимальным значением val
+   document.write('{val:'+n.val+", item:"+n.item+"}, ");
+}
+</pre>
+<b class="outJS norm">
+<script>
+var q = new Queue();                              // создаём пустую приоритетную очередь
+q.lt  = function(a,b) { return a.val < b.val; }   // функция меньше
+q.unshift( {val:2,   item:"table"});              // добавляем 4 объекта
+q.unshift( {val:10,  item:"ring"});
+q.unshift( {val:5,   item:"car"});
+q.unshift( {val:75,  item:"book"});
+while(!q.empty()){                                // пока очередь не пустая,
+   var n = q.shift();                             // выталкиваем объект с минимальным значением val
+   document.write('{val:'+n.val+", item:"+n.item+"}, ");
+}
+</script>
+</b>
+</p>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="queue0"></a>
+<h2>Организация дерева очереди</h2>
+
+<p>
+Упорядочим узлы приоритетной очереди в виде
+<i>бинарного дерева</i>. У этого дерева  <i>два</i> потомка каждого узла должны быть
+большими или равными  родительскому узлу.
+Соответственно, в корне дерева находится наименьший узел.
+Такая организация приоритетной очереди называется <i>двоичной кучей</i>.
+Ниже приведено дерево очереди случайных чисел из первого примера предыдущего раздела:
+<script>
+Tree.svg.skpX = -2;
+document.write(Tree.getSVG(tree), '<br>'); // рисуем внутренне представление в виде дерева
+</script>
+</p>
+<p>
+Узлы дерева будем хранить в массиве <b class="norm">ar</b>.
+Корневой узел находится в элементе <b class="norm">ar[1]</b>.
+Его два потомка в <b class="norm">ar[2]</b> и <b class="norm">ar[3]</b>.
+Потомки  <b class="norm">i</b>-того узла (элемента <b class="norm">ar[i]</b>)
+хранятся в <b class="norm">ar[2*i]</b> и <b class="norm">ar[2*i+1]</b>.
+Благодаря такой организации  данных, бинарное дерево максимально
+<a href="bst-2.html#bin2">сбалансировано</a>.
+Если число узлов равно <b class="norm">length = 2<sup>k</sup>-1</b>,
+то в дереве будут заняты все листья на его нижнем (<b class="norm">k</b>-том) уровне. В общем случае, нижний уровень дерева заполняется
+слева направо и в <b class="norm">ar[length]</b> находится самый правый узел нижнего уровня.
+Нулевой элемент массива <b class="norm">ar</b> не используется. Ниже приведено бинарное дерево и соответствующее
+ему представление в виде массива (заметим, что элементы в массиве идут в порядке обхода дерева сверху-вниз и слева-направо):
+</p>
+<p>
+<center>
+<div style="overflow:hidden; width:700px">
+<div style="float:left; width: 200px;">
+<script>
+var q = new Queue();
+var ar = [1, 3, 4, 5, 6, 7, 9, 8, 2, 0];
+for(var i=0; i < ar.length; i++)
+   q.unshift(ar[i]);
+document.write(Tree.getSVG(q.getTree()));
+</script>
+</div>
+<div style="float:right; width: 350px; margin-top:10px; margain-right:5px;">
+<table class="norm borderTH centerTD">
+<tr> <td style="text-align: right;">i:</td>  <td>0</td> <td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td> <td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td></tr>
+<tr> <td style="text-align: right;">ar:</td> <th>-</th> <th>0</th> <th>1</th> <th>4</th> <th>3</th> <th>2</th> <th>7</th> <th>9</th> <th>8</th> <th>5</th> <th>6</th> </tr>
+</table>
+</div>
+</div>
+</center>
+Понятно, что родитель <b class="norm">i</b>-го узла - это элемент <b class="norm">ar[i/2]</b>.
+<a href="Recursion.html#rec3a">Напомним</a>, что в JavaScript, в отличии от С++, целочисленного деления нет (все числа вещественные).
+Впрочем, <a href="Recursion.html#rec3a"></a>быстрое целочисленное деление можно организовать при помощи логического сдвига
+на один бинарный разряд:
+<b class="norm">i >> 1</b>.
+</p>
+<p>
+Констрктор класса <b class="norm">Queue</b> имеет вид:
+<pre class="brush: js">
+function Queue(num)
+{
+   if(!num) num = 1000;                           // по умолчанию максимум очереди = 1000
+   this.ar   = new Array(num);                    // массив, хранящий узлы очереди
+   this.length = 0;                               // число узлов в очереди
+}
+</pre>
+Массив для хранения узлов бинарного дерева очереди по умолчанию будет иметь <b class="norm">1000</b>
+элементов. JavaScript  терпимо относится к выходу индекса за пределы длины массива.
+Если это происходит, его размер автоматически увеличивается.
+Однако, эта операция достаточно затратная по времени (необходимо выделить новую память, скопировать
+данные и освободить старую память). Поэтому при работе с очередью стоит зарезервировать массив по-больше.
+</p>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="queue1"></a>
+<h2>Добавление элемента в очередь</h2>
+
+<p>
+Добавление - достаточно простая операция.
+Новый узел дерева сначала помещается в самый его низ.
+Для этого новый узел достаточно вставить за последним узлом в массиве (первая строка функции).
+Напомним, что, если <b class="norm">++</b> стоит перед переменной,
+то <i>сначала</i> она увеличивается на единицу (ниже это увеличение числа узлов <b class="norm">++this.length</b> дерева),
+а <i>затем</i> участвует в выражении:
+<pre class="brush: js">
+Queue.prototype.unshift = function(n)
+{
+   this.ar[++this.length] = n;                    // добавляем узел
+   for(var i=this.length; i > 1 && this.lt(this.ar[i], this.ar[i >> 1]); i = i >> 1)
+      this.swap(i, i >> 1);                       // движемся вверх к корню
+}
+</pre>
+Оказавшись последним элементом массива,  узел  становится дочерним для
+узла с индексом <b class="norm">length/2 === i >> 1</b> ("целочисленное деление").
+Затем, его необходимо поднимать вверх по дереву к корню (переставляя с родительскими узлами местами)
+до тех пор, пока он меньше родителя.
+Для операции меньше по-умолчанию используется функция:
+<pre class="brush: js">
+Queue.prototype.lt = function (a, b){ return a < b; }
+</pre>
+Функция перестановки <b class="norm">i</b>-того и <b class="norm">j</b>-того элементов массива <b class="norm">ar</b> имеет вид:
+<pre class="brush: js">
+Queue.prototype.swap = function (i, j)
+{
+   var a = this.ar[i]; this.ar[i] = this.ar[j]; this.ar[j] = a;
+}
+</pre>
+</p>
+<p>
+Ниже приведены последовательные действия по добавлению нового узла со значением <b class="norm">2</b>
+и его подъем вверх  на положенное для него место:
+</p>
+<script>
+var trees = [];
+Queue.prototype.unshift2 = function(n)
+{
+   this.ar[++this.length] = n;                    // добавляем узел
+   trees.push(this.getTree());
+   for(var i=this.length; i > 1 && this.ar[i] < this.ar[i >> 1]; i = i >> 1){
+      this.swap(i, i >> 1);                       // движемся вверх к корню
+      trees.push(this.getTree());
+   }
+}
+</script>
+<center>
+<script>
+var q = new Queue();
+var ar = [1, 3, 4, 5, 6, 7, 9, 8];
+for(var i=0; i < ar.length; i++)
+   q.unshift(ar[i]);
+
+Tree.svg.colors = ["#FFC", "#960", "#069"];
+document.write(Tree.getSVG(q.getTree()));
+q.unshift2(2);
+for(var i = 0; i < trees.length; i++){
+   Tree.setNm(trees[i], "chk", 1, 2);
+   document.write(Tree.getSVG(trees[i]));
+}
+</script>
+</center>
+
+<!--------------------------------------------------------------------------------------->
+
+<hr>
+<a id="queue2"></a>
+<h2>Выталкивание элемента из очереди</h2>
+
+<p>
+Чтобы вытолкнуть минимальный элемент из очереди, необходимо проделать следующие действия.
+Сначала меняем местами корень и последний узел дерева. После этого, бывший корень (минимальный узел)
+можно без проблем удалить,  уменьшив число узлов <b class="norm">length--</b>.
+Однако, бывший последний узел, оказавшись в корне, нарушает свойства дерева.
+Поэтому его необходимо опустить вниз, меняя с своими потомками местами,
+пока он не займёт "надлежащего" положения на дереве.
+Это произойдёт, когда оба его потомка окажутся большими или равными опускаемому узлу.
+При опускании, узел меняется с <i>минимальным</i> из двух потомков, чтобы выше поднялось меньшее значение.
+Ниже приведен  пример, в котором вниз опускается ключ <b class="norm">5</b>, после его обмена с корнем 1:
+<center>
+<script>
+trees = [];
+Queue.prototype.shift2 = function()
+{
+   if(this.length===0)                            // очередь пустая
+      return;                                     // вернём undefined
+   trees.push(this.getTree());
+   this.swap(1, this.length);                     // переставляем корень в конец массива
+   trees.push(this.getTree());
+   this.rebuild2(1);                              // перестраиваем дерево
+   this.length--;
+   trees.push(this.getTree());
+   return this.ar[this.length];                   // уменьшаем число узлов
+}
+Queue.prototype.rebuild2 = function(node)
+{
+   var lf = 2*node;                               // левый наследник у node
+   if(lf < this.length){                          // если он есть
+      var rt = lf + 1;                            // это правый наследник node
+      if(rt < this.length && this.lt(this.ar[rt], this.ar[lf]) )
+         lf = rt;                                 // выбираем наименьшего
+      if( this.lt(this.ar[lf], this.ar[node]) ){  // если он меньше node
+         this.swap(node, lf);                     // переставляем их местами
+         trees.push(this.getTree());
+         this.rebuild2(lf);                       // и повторяем операцию
+      }
+   }
+}
+q.shift2();
+trees.push(q.getTree());
+for(var i = 0; i+1 < trees.length; i++){
+   Tree.setNm(trees[i], "chk", 2, 1);
+   Tree.setNm(trees[i], "chk", 1, 5);
+   document.write(Tree.getSVG(trees[i]));
+}
+</script>
+</center>
+</p>
+<p>
+Соответствующий код функции <b class="norm">shift</b> имеет вид:
+<pre class="brush: js">
+Queue.prototype.shift = function()
+{
+   if(this.length===0)                            // очередь пустая
+      return;                                     // вернём undefined
+
+   this.swap(1, this.length);                     // переставляем корень в конец массива
+   this.rebuild(1);                               // перестраиваем дерево
+   return this.ar[this.length--];                 // уменьшаем число узлов
+}
+</pre>
+Она использует функцию "приведение в порядок" дерева, начиная с узла <b class="norm">node</b> и ниже:
+<pre class="brush: js">
+Queue.prototype.rebuild = function(node)
+{
+   var lf = 2*node;                               // левый наследник узла node
+   if(lf < this.length){                          // если он есть (игнорируя бывший корень)
+      var rt = lf + 1;                            // это правый наследник node
+      if(rt < this.length && this.lt(this.ar[rt], this.ar[lf]) )
+         lf = rt;                                 // выбираем наименьший (если rt есть)
+      if( this.lt(this.ar[lf], this.ar[node]) ){  // если он меньше node
+         this.swap(node, lf);                     // переставляем их местами
+         this.rebuild(lf);                        // и повторяем операцию
+      }
+   }
+}
+</pre>
+</p>
+<p>
+Использование бинарной кучи - это самый простой способ организации приоритетной очереди.
+Для поддержки свойств кучи при вставке и выталкивании узла требуется в среднем <b class="norm">log<sub>2</sub>N</b>
+операций, где <b class="norm">N</b> - число узлов в дереве.
+За счёт некоторого усложнения, можно получить единичную сложность <b class="norm">O(1)</b> добавления (т.е.
+скорость добавления не зависит от числа узлов). При этом сохраняется логарифмическая
+сложность удалении узла. Соответствующая структура данных называется <i>кучей Фибоначчи</i>.
+</p>
+<p>
+Обратим внимание, что приоритетная очередь одновременно является способом сортировки
+(некоторая совокупность величин помещается в очередь, откуда извлекается уже в заданном порядке).
+</p>
+
+<!--------------------------------------------------------------------------------------->
+<hr>
+<script>writePrevNextMenu("BST", "BST.html",  "Деревья", "Trees.html");</script>
+<!--------------------------------------------------------------------------------------------------------->
+
+</div> <!-- content -->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+<!--------------------------------------------------------------------------------------------------------->
+<script src="../../../_js/google.js"></script>
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/Queue.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:18 GMT -->
+</html>

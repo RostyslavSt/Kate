@@ -1,0 +1,380 @@
+<html lang="ru">
+
+<!-- Mirrored from synset.com/ai/ru/data/graph_editor.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:13 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Редактор графов</title>
+
+<link rel="stylesheet" type="text/css" href="../../_js/style.css" />            <!-- стили -->
+<script type="application/javascript" src="../../_js/menu.js"></script>         <!-- меню -->
+<script type="application/javascript" src="../../_js/input.js"></script>         <!-- обработка клавиатуры -->
+
+<script type="application/javascript" src="../../_js/draw.js"></script>         <!-- функции рисования  -->
+<script type="application/javascript" src="../../_js/g2d.js"></script>          <!-- алгоритмы векторной графики -->
+<script type="application/javascript" src="../../_js/ms.js"></script>           <!-- математические функции -->
+
+<script type="application/javascript" src="../../_js/graph.js"></script>             <!--  -->
+<script type="application/javascript" src="../../_js/ga.js"></script>                <!--  -->
+
+<style type="text/css">
+   canvas {  background-color: #ffffff;  border: 1px solid black; margin: auto; }
+</style>
+</head>
+<!--------------------------------------------------------------------------------------->
+<body>
+<div id="container">
+<div id="header"><script>writeHorNavMenu(document.URL);</script></div>
+<div id="content">
+<!--------------------------------------------------------------------------------------->
+<b class="blue2" id="posID"></b><br>
+<canvas id="canvas" width="950px" height="500px" ></canvas>
+<button type="button" id="save"   onClick="set(this);" style="width:80px;">set</button>
+<button type="button" id="press"  onClick="press(this);" style="width:80px;">press</button>
+<input type="checkbox" id="press_cr_id" checked>del CR</input>
+<button type="button" id="create" onClick="create(this);" style="width:80px;">create</button>
+<select name="selectMenu" id="methodID" size="1" onChange="selectMethod(this.value);">
+<option value="0" selected="selected">Пустой</option>
+<option value="1" >                   Сетку</option>
+<option value="2" >                   Сдвинуть</option>
+<option value="3" >                   Начало в центр</option>
+</select>
+<input type="text" id="params_ID" value='{ "d": 50 }' style="width:30em; font-weight: bold; ">
+<br>
+<b class="blue2">a</b> - ненаправленное ребро, <b class="blue2">r</b> - направленное ребро, <b class="blue2">c</b> - удалить ребро, <b class="blue2">d</b> - удалить узел под мышкой
+<br>
+<textarea id="txt_nodes" rows="15" cols="112"></textarea>
+<br>
+<pre id="info" style="width:950px; height:100px; border: 1px solid black; border-radius: 10px;">
+</pre>
+<hr>
+<!--------------------------------------------------------------------------------------------->
+<h2>Помощь</h2>
+<p>
+При клике на пустом пространстве создаётся новый узел. При клике на узле он выбирается (становится красным).
+Узел, оказавшийся под мышкой становится зелёным. Если удерживать на клавиатуре одну из кнопок <b class="blue2">a</b>, <b class="blue2">r</b>,
+<b class="blue2">c</b>, <b class="blue2">d</b> и кликнуть по зелёному узлу мышкой, произойдёт одно из действий редактирования.
+</p>
+<!--------------------------------------------------------------------------------------------->
+<hr>
+<h2>SVG - file</h2>
+<i>Получить текущую конфигурацию в svg-формате.</i> <br>
+SVG-файл можно вставить непосредственно в html-страницу.
+При этом, для уменьшения масштаба в два раза, тело файла необходимо  обернуть тегами
+<b class="black">&lt;g transform="scale(0.5)"> ...&lt;/g>;</b> и в <b class="black">&lt;svg></b> поставить необходимую ширину и высоту. <br>
+Если он грузится с диска, то масштаб, как обычно, меняется в теге <b class="blue">&lt;im</b>
+<b class="green">src</b>="g.svg" <b class="green">width</b>="50%" <b class="blue">></b>
+<br><br>
+<center>
+   <button type="button" onClick="getSVG();">Get svg</button></br>
+   <textarea id="txt_svg"  rows="17" cols="110"></textarea>
+</center>
+
+
+<hr>
+
+
+</div> <!-- content -->
+<!----------------------------------------------------------------------------------->
+<div id="clear"></div>
+<div id="footer"><script> writeFooter(document.URL); </script></div>
+</div> <!-- container -->
+
+<script>
+var canvas = document.getElementById('canvas');
+canvas.addEventListener("mousedown", mouseDn, false);
+canvas.addEventListener("mouseup",   mouseUp, false);
+canvas.addEventListener("mousemove", mouseMv, false);
+//setInterval(timer, 10); // вызываем через 10ms
+
+//-----------------------------------------------------------------------------
+var draw  = new Draw('canvas');
+var graph = new Graph();
+//graph.nodes = [{nm:0,go:[1,2],d:0,s:"0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",y:170.5,x:369},{nm:1,go:[0,3,4],d:1,s:"1,0,2,3,4,5,6,7,8,9,10,11,12,13,14,15",x:478,y:170.5},{nm:1,go:[0,5,6],d:1,s:"4,1,2,3,0,5,6,7,8,9,10,11,12,13,14,15",x:260,y:170.5},{nm:2,go:[1,7,8],d:2,s:"1,2,0,3,4,5,6,7,8,9,10,11,12,13,14,15",x:549,y:99.5},{nm:2,go:[1,9,10,11],d:2,s:"1,5,2,3,4,0,6,7,8,9,10,11,12,13,14,15",x:549,y:241.5},{nm:2,go:[2,12,13,14],d:2,s:"4,1,2,3,5,0,6,7,8,9,10,11,12,13,14,15",x:190.5,y:241},{nm:2,go:[2,15,16],d:2,s:"4,1,2,3,8,5,6,7,0,9,10,11,12,13,14,15",x:189,y:99.5},{nm:3,go:[3,17],d:3,s:"1,2,3,0,4,5,6,7,8,9,10,11,12,13,14,15",x:550.5,y:11},{nm:3,go:[3,18,19,20],d:3,s:"1,2,6,3,4,5,0,7,8,9,10,11,12,13,14,15",x:639,y:100.5},{nm:3,go:[4,21,22,23],d:3,s:"1,5,2,3,4,6,0,7,8,9,10,11,12,13,14,15",x:641,y:241.5},{nm:3,go:[4,24,25],d:3,s:"1,5,2,3,0,4,6,7,8,9,10,11,12,13,14,15",x:614,y:306.5},{nm:3,go:[4,26,27,28],d:3,s:"1,5,2,3,4,9,6,7,8,0,10,11,12,13,14,15",x:460,y:300},{nm:3,go:[5,29,30,31],d:3,s:"4,1,2,3,5,6,0,7,8,9,10,11,12,13,14,15",x:240,y:300},{nm:3,go:[5,32,33,34],d:3,s:"4,1,2,3,5,9,6,7,8,0,10,11,12,13,14,15",x:124,y:306.5},{nm:3,go:[5,35,36],d:3,s:"4,0,2,3,5,1,6,7,8,9,10,11,12,13,14,15",x:97,y:241.5},{nm:3,go:[6,37,38,39],d:3,s:"4,1,2,3,8,5,6,7,9,0,10,11,12,13,14,15",x:99,y:100.5},{nm:3,go:[6,40],d:3,s:"4,1,2,3,8,5,6,7,12,9,10,11,0,13,14,15",x:190.5,y:11},{nm:4,go:[7],d:4,s:"1,2,3,7,4,5,6,0,8,9,10,11,12,13,14,15",x:430.5,y:11},{nm:4,go:[8],d:4,s:"1,2,6,3,4,5,7,0,8,9,10,11,12,13,14,15",x:639,y:10.5},{nm:4,go:[8],d:4,s:"1,2,6,3,4,0,5,7,8,9,10,11,12,13,14,15",x:720.5,y:11},{nm:4,go:[8],d:4,s:"1,2,6,3,4,5,10,7,8,9,0,11,12,13,14,15",x:720,y:100},{nm:4,go:[9],d:4,s:"1,5,2,3,4,6,7,0,8,9,10,11,12,13,14,15",x:600.5,y:171},{nm:4,go:[9],d:4,s:"1,5,2,3,4,6,10,7,8,9,0,11,12,13,14,15",x:720.5,y:171},{nm:4,go:[9],d:4,s:"1,5,0,3,4,6,2,7,8,9,10,11,12,13,14,15",x:720.5,y:241},{nm:4,go:[10],d:4,s:"1,5,2,3,8,4,6,7,0,9,10,11,12,13,14,15",x:720.5,y:311},{nm:4,go:[10],d:4,s:"0,5,2,3,1,4,6,7,8,9,10,11,12,13,14,15",x:720.5,y:381},{nm:4,go:[11],d:4,s:"1,5,2,3,4,9,6,7,8,10,0,11,12,13,14,15",x:520,y:380},{nm:4,go:[11],d:4,s:"1,5,2,3,4,9,6,7,0,8,10,11,12,13,14,15",x:410,y:390},{nm:4,go:[11],d:4,s:"1,5,2,3,4,9,6,7,8,13,10,11,12,0,14,15",x:400,y:240},{nm:4,go:[12],d:4,s:"4,1,2,3,5,6,7,0,8,9,10,11,12,13,14,15",x:300,y:240},{nm:4,go:[12],d:4,s:"4,1,2,3,5,6,10,7,8,9,0,11,12,13,14,15",x:300,y:390},{nm:4,go:[12],d:4,s:"4,1,0,3,5,6,2,7,8,9,10,11,12,13,14,15",x:190,y:390},{nm:4,go:[13],d:4,s:"4,1,2,3,5,9,6,7,8,10,0,11,12,13,14,15",x:90,y:390},{nm:4,go:[13],d:4,s:"4,1,2,3,5,9,6,7,0,8,10,11,12,13,14,15",x:10.5,y:351},{nm:4,go:[13],d:4,s:"4,1,2,3,5,9,6,7,8,13,10,11,12,0,14,15",x:10.5,y:271},{nm:4,go:[14],d:4,s:"4,2,0,3,5,1,6,7,8,9,10,11,12,13,14,15",x:10.5,y:191},{nm:4,go:[14],d:4,s:"0,4,2,3,5,1,6,7,8,9,10,11,12,13,14,15",x:140.5,y:161},{nm:4,go:[15],d:4,s:"4,1,2,3,8,5,6,7,9,10,0,11,12,13,14,15",x:10.5,y:121},{nm:4,go:[15],d:4,s:"4,1,2,3,8,5,6,7,9,13,10,11,12,0,14,15",x:10.5,y:41},{nm:4,go:[15],d:4,s:"4,1,2,3,8,0,6,7,9,5,10,11,12,13,14,15",x:99,y:10.5},{nm:4,go:[16],d:4,s:"4,1,2,3,8,5,6,7,12,9,10,11,13,0,14,15",x:300.5,y:11}];
+var nodeR = Graph.svg.w/2;
+var gridW = 10;                                   // ширина ячейки сетки
+var gridH = 10;
+
+var nodeSel1 = -1;
+var nodeSel2 = -1;
+Graph.svg.colors = ['#FFA', '#F00', '#0F0'];
+Graph.svg.sText = 10;
+Graph.svg.chW   =  7;
+
+init();
+
+var mouseButtonDn = false;
+var startOptimize = false;
+var nodeSel;
+
+/*******************************************************************************
+* Выбор метода
+*/
+function selectMethod(method)
+{
+   var params = document.getElementById('params_ID');
+   switch(method){
+      case "0": params.value = '{ "d":10 }';              break;    // пустой
+      case "1": params.value = '{ "x":30, "y":30, "w":15, "h":15, "d":30 }';  break;    // сетка
+      case "2": params.value = '{ "dx":100, "dy":100 }';  break;    // сдвинуть
+      case "3": params.value = '{ }';  break;    // начало в центр
+   }
+}
+/*******************************************************************************
+* Создать граф
+*/
+function create()
+{
+   var params = JSON.parse(document.getElementById('params_ID').value);
+   var method = document.getElementById('methodID').value;
+   switch(method){
+      case "0":
+         graph = new Graph();
+         gridW = gridH = params.d;
+         break;
+      case "1":
+         graph = new Graph();
+         gridW = gridH = params.d;
+         graph.createGrid(params.w, params.h, params.d);
+         graph.translate(params.x, params.y);
+         break;
+      case "2":
+         graph.translate(params.dx, params.dy);
+         break;
+      case "3":
+         graph.translate(gridW*Math.floor(0.5*draw.w/gridW), gridH*Math.floor(0.5*draw.h/gridH));
+         break;
+   }
+   show();
+}
+/*******************************************************************************
+ * when mouse down
+ */
+function init()
+{
+   //graph.plotCanvas('canvas');
+
+   show();
+}
+/*******************************************************************************
+*  Нарисовать реадктор
+*/
+function show()
+{
+   draw.clear();
+   draw.colorFill('#FFF');
+   draw.colorLine('#EEE');
+   draw.box(draw.w/2,draw.h/2, draw.w, draw.h);
+   for(var i=0; i < draw.w/gridW; i++)
+      draw.line(i*gridW, 0, i*gridW, draw.h);
+   for(var j=0; j < draw.h/gridH; j++)
+      draw.line(0, j*gridH, draw.w, j*gridH);
+
+   graph.plotCanvas('canvas');
+   document.getElementById('txt_nodes').value = graph.getJSON();
+   showInfo();
+}
+/*******************************************************************************
+*  show info about graph
+*/
+function showInfo()
+{
+   var info = document.getElementById('info');
+   info.innerHTML = "nodes: " + graph.numNodes()+" ribs: "+graph.numRibs()+"\n";
+   info.innerHTML += "crossings : " + graph.getNumCross()+", ";
+   info.innerHTML += "dispersion: " + Math.floor(graph.getSigmaRibs())+"\n";
+   info.innerHTML += "value     : " + graph.value()+"\n";
+}
+/*******************************************************************************
+* Получить координаты мыши
+*/
+function getPos(event)
+{
+  var rct = canvas.getBoundingClientRect();
+  return { x: event.clientX - rct.left,  y: event.clientY - rct.top };
+}
+/*******************************************************************************
+* when mouse down
+*/
+function mouseDn(event)
+{
+   mouseButtonDn = true;
+}
+/*******************************************************************************
+* when mouse up
+*/
+function mouseUp(event)
+{
+   mouseButtonDn = false;
+
+   var  p = getPos(event);
+   var n = graph.getNode(p.x, p.y, nodeR);
+
+   if(n >= 0){
+      if     (input.isDown('r') && n !== nodeSel1 && nodeSel1 >= 0 ){      // создаём ребро
+         graph.addRib(nodeSel1, n);
+      }
+      else if(input.isDown('a') && n !== nodeSel1 && nodeSel1 >= 0 ){      // создаём ребро
+         graph.addRib(nodeSel1, n);
+         graph.addRib(n, nodeSel1);
+      }
+      else if(input.isDown('c') && n !== nodeSel1 && nodeSel1 >= 0 ){      // создаём ребро
+         graph.delRib(nodeSel1, n);
+         graph.delRib(n, nodeSel1);
+      }
+      else if(input.isDown('d') && (n === nodeSel1 || n === nodeSel2) ){                       // удаляем узел
+         graph.delNode(n);
+         nodeSel1 = nodeSel2 = -1;
+      }
+      else{
+         if(nodeSel1 >= 0 && n !== nodeSel1 )     // была пометка
+           graph.nodes[nodeSel1].chk = 0;
+         graph.set("chk", 0);
+         graph.nodes[n].chk = 1;                  // делаем новую пометку
+         nodeSel1 = n;
+         nodeSel2 = -1;
+     }
+   }
+   else{
+      if(nodeSel1 >= 0 ){                         // снимаем пометку
+         graph.nodes[nodeSel1].chk = 0;
+         nodeSel1 = -1;
+      }
+
+      if(nodeSel2 < 0){
+         p.x = Math.round(p.x/gridW)*gridW;       // добавляем узел
+         p.y = Math.round(p.y/gridH)*gridH;
+         graph.nodes.push({nm:graph.nodes.length, go:[], x:p.x, y:p.y});
+      }
+   }
+
+   show();
+}
+/*******************************************************************************
+* when mouse move
+*/
+function mouseMv(event)
+{
+   var p = getPos(event);
+   var n = graph.getNode(p.x, p.y, nodeR);
+
+
+   if(mouseButtonDn && nodeSel2 >= 0){                                     // двигаем узел
+      graph.nodes[nodeSel2].x = Math.round(p.x/gridW)*gridW;
+      graph.nodes[nodeSel2].y = Math.round(p.y/gridH)*gridH;
+   }
+   else{
+
+      if(n >= 0 && n !== nodeSel1){                                          // делаем пометку
+         graph.nodes[n].chk = 2;
+         nodeSel2 = n;
+      }
+      if(n < 0 && nodeSel2 >=0  && nodeSel2 !== nodeSel1){
+         graph.nodes[nodeSel2].chk = 0;
+         nodeSel2 = -1;
+      }
+   }
+   var st = "";
+   if(nodeSel1>=0){
+      st =  JSON.stringify(graph.nodes[nodeSel1]);
+      st = ";  "+nodeSel1+":" + st.replace(/\"(\w+)\":/g, '$1:');
+   }
+   document.getElementById('posID').innerHTML = 'x:'+Math.round(p.x*10)/10+' y:'+Math.round(p.y*10)/10
+   + st;
+   ;//+' n='+n+' sel1='+nodeSel1+' sel2='+nodeSel2;
+
+   show();
+}
+/*******************************************************************************
+*
+*/
+function timer()
+{
+   if(!startOptimize)
+      return;
+
+   graph.setGraphPos(canvas, nodeR);
+   var v = graph.value();
+
+   if(v > valueBest){       // restore the best
+      graph.clone(graphBest);
+   }
+   if(v <= valueBest){       // save the best
+      valueBest=v;
+      graphBest.clone(graph);
+   }
+
+   graph.plotCanvas('canvas');
+   showInfo();
+}
+/*******************************************************************************
+*/
+function selectGraph(val)
+{
+   var txt_nodes = document.getElementById('txt_nodes');
+   init(val);
+}
+/*******************************************************************************
+*/
+function getJSON()
+{
+   var txt_nodes = document.getElementById('txt_nodes');
+   txt_nodes.value = graph.getJSON();
+   //txt_nodes.value += "\n\n" + JSON.stringify(graph.nodes);
+}
+/*******************************************************************************
+*/
+function getSVG()
+{
+   var txt_svg = document.getElementById('txt_svg');
+   txt_svg.value  =  graph.getSVG();
+}
+/*******************************************************************************
+*/
+function set(obj)
+{
+   var st = document.getElementById('txt_nodes').value;
+   //st = st.replace(/\n/g,"");
+   graph.nodes = JSON.parse(st);
+   show();
+}
+/*******************************************************************************
+*/
+function press(obj)
+{
+   var minX=Infinity, minY=Infinity;
+   for(var i=graph.nodes.length; i--; ){
+      var n = graph.nodes[i];
+      if(n.x < minX)
+         minX = n.x;
+      if(n.y < minY)
+         minY = n.y;
+      if(n.chk !== undefined)
+        delete n.chk;
+   }
+   for(var i=graph.nodes.length; i--; ){
+      var n = graph.nodes[i];
+      n.x = n.x - minX + nodeR;
+      n.y = n.y - minY + nodeR;
+   }
+
+   var st = graph.getJSON("true")
+   if(document.getElementById('press_cr_id').checked)
+      st = st.replace(/\n/g, "");
+   document.getElementById('txt_nodes').value = st;
+}
+/*******************************************************************************
+*/
+function optimize(obj)
+{
+   startOptimize = !startOptimize;
+   obj.innerHTML = startOptimize?  "Stop": "Optimize";
+}
+</script>
+
+
+<script src="../../../_js/google.js"></script>
+
+</body>
+
+<!-- Mirrored from synset.com/ai/ru/data/graph_editor.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 08 Nov 2018 21:13:14 GMT -->
+</html>
